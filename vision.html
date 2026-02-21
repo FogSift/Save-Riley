@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Save Riley — Vision Board</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --panel: #111111;
+      --border: #222222;
+      --accent: #f59e0b;
+      --accent2: #00f0ff;
+      --accent3: #bc13fe;
+      --ready: #39ff14;
+      --alert: #ff0055;
+      --text: #d1d1d6;
+      --text-strong: #ffffff;
+      --dim: #444;
+      --card-bg: #141414;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Scanline overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(188,19,254,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 20% 80%, rgba(0,240,255,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 6vw, 4.5rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      color: var(--text-strong);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 span { color: var(--accent); }
+
+    .hero-sub {
+      font-size: 13px;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    .hero-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ready);
+      border: 1px solid rgba(57,255,20,0.3);
+      padding: 6px 14px;
+      border-radius: 2px;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ready);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Section headers ── */
+    .section {
+      padding: 60px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 9px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 40px;
+    }
+
+    /* ── Now / Next / Later grid ── */
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      .tier-grid { grid-template-columns: 1fr; }
+    }
+
+    .tier {
+      background: var(--card-bg);
+      padding: 32px;
+    }
+
+    .tier-badge {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    .tier-badge.now   { background: rgba(57,255,20,0.12);  color: var(--ready);   border: 1px solid rgba(57,255,20,0.3); }
+    .tier-badge.next  { background: rgba(245,158,11,0.12); color: var(--accent);  border: 1px solid rgba(245,158,11,0.3); }
+    .tier-badge.later { background: rgba(188,19,254,0.12); color: var(--accent3); border: 1px solid rgba(188,19,254,0.3); }
+
+    .tier h3 {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 24px;
+    }
+
+    .tier-items { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+
+    .tier-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .tier-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .tier-icon.now   { background: rgba(57,255,20,0.1);  }
+    .tier-icon.next  { background: rgba(245,158,11,0.1); }
+    .tier-icon.later { background: rgba(188,19,254,0.1); }
+
+    .tier-item-text strong {
+      display: block;
+      font-size: 12px;
+      color: var(--text-strong);
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .tier-item-text span {
+      font-size: 11px;
+      color: var(--dim);
+      line-height: 1.5;
+    }
+
+    /* ── Feature cards ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 28px;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .card:hover { background: #1a1a1a; }
+
+    .card-accent-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+    }
+
+    .card-tag {
+      font-size: 8px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 10px;
+    }
+
+    .card h3 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-strong);
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      font-size: 11px;
+      line-height: 1.7;
+      color: var(--dim);
+    }
+
+    .card-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      color: var(--dim);
+    }
+
+    /* ── Architecture diagram ── */
+    .arch {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .arch::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(var(--border) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0.5;
+    }
+
+    .arch-inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .arch-inner { grid-template-columns: 1fr; }
+      .arch-arrow { transform: rotate(90deg); }
+    }
+
+    .arch-block {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .arch-block-label {
+      font-size: 8px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 8px;
+    }
+
+    .arch-block-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-strong);
+      margin-bottom: 12px;
+    }
+
+    .arch-block-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .arch-block-items li {
+      font-size: 10px;
+      color: var(--dim);
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 2px;
+    }
+
+    .arch-block-items li.highlight {
+      color: var(--accent2);
+      background: rgba(0,240,255,0.05);
+    }
+
+    .arch-arrow {
+      font-size: 20px;
+      color: var(--dim);
+      text-align: center;
+    }
+
+    /* ── Use cases ── */
+    .usecase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .usecase {
+      background: var(--card-bg);
+      padding: 28px;
+    }
+
+    .usecase-number {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--border);
+      line-height: 1;
+      margin-bottom: 12px;
+      letter-spacing: -0.04em;
+    }
+
+    .usecase h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-strong);
+      margin-bottom: 8px;
+    }
+
+    .usecase p {
+      font-size: 11px;
+      line-height: 1.6;
+      color: var(--dim);
+    }
+
+    /* ── Tech stack vision ── */
+    .stack-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 2px;
+    }
+
+    @media (max-width: 600px) {
+      .stack-row { grid-template-columns: 1fr; }
+    }
+
+    .stack-label {
+      background: var(--panel);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .stack-label span {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--dim);
+    }
+
+    .stack-options {
+      background: var(--card-bg);
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .stack-pill {
+      font-size: 10px;
+      padding: 4px 12px;
+      border-radius: 2px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .stack-pill.current {
+      background: rgba(245,158,11,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(245,158,11,0.3);
+    }
+
+    .stack-pill.option {
+      background: rgba(255,255,255,0.03);
+      color: var(--dim);
+      border: 1px solid var(--border);
+    }
+
+    .stack-pill.option:hover {
+      color: var(--text);
+      border-color: var(--dim);
+    }
+
+    /* ── API mockup ── */
+    .api-mockup {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .api-mockup-header {
+      background: var(--panel);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-mockup-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .api-mockup-title {
+      font-size: 10px;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .api-mockup-body {
+      padding: 24px;
+      font-size: 11px;
+      line-height: 1.8;
+      color: #8b949e;
+    }
+
+    .api-mockup-body .key   { color: #79c0ff; }
+    .api-mockup-body .str   { color: #a5d6ff; }
+    .api-mockup-body .num   { color: #f47067; }
+    .api-mockup-body .bool  { color: #ff9492; }
+    .api-mockup-body .var   { color: var(--accent); }
+    .api-mockup-body .cmnt  { color: #3d444d; }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 48px 24px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-logo {
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 8px;
+    }
+
+    .footer-sub {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #2a2a2a;
+    }
+
+    /* ── Divider ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ── Glitch animation on title ── */
+    @keyframes glitch {
+      0%   { clip-path: inset(40% 0 61% 0); transform: translate(-2px, 0); }
+      20%  { clip-path: inset(92% 0 1% 0);  transform: translate(2px, 0); }
+      40%  { clip-path: inset(43% 0 1% 0);  transform: translate(-2px, 0); }
+      60%  { clip-path: inset(25% 0 58% 0); transform: translate(2px, 0); }
+      80%  { clip-path: inset(54% 0 7% 0);  transform: translate(-2px, 0); }
+      100% { clip-path: inset(58% 0 43% 0); transform: translate(2px, 0); }
+    }
+
+    .glitch-wrapper { position: relative; display: inline-block; }
+
+    .glitch-wrapper::before,
+    .glitch-wrapper::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      font-size: inherit;
+      font-weight: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      line-height: inherit;
+    }
+
+    .glitch-wrapper::before {
+      color: var(--accent2);
+      animation: glitch 3.5s infinite linear alternate-reverse;
+      opacity: 0.6;
+    }
+
+    .glitch-wrapper::after {
+      color: var(--alert);
+      animation: glitch 2.8s infinite linear alternate;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════ HERO -->
+  <section class="hero">
+    <div class="container">
+      <p class="hero-eyebrow">FogSift Systems // Internal Document</p>
+      <h1>
+        <span class="glitch-wrapper" data-text="Save Riley">Save Riley</span><br>
+        Vision Board
+      </h1>
+      <p class="hero-sub">What this project is · What it could become · What you can do with it</p>
+      <div class="hero-status">
+        <div class="pulse-dot"></div>
+        RILEY.EXE // STATUS: EVOLVING
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ WHAT IT IS -->
+  <section class="section">
+    <div class="container">
+      <p class="section-label">00 // Foundation</p>
+      <h2 class="section-title">What exists today</h2>
+
+      <div class="arch">
+        <div class="arch-inner">
+          <div>
+            <div class="arch-block">
+              <div class="arch-block-label">Input</div>
+              <div class="arch-block-title">Player Actions</div>
+              <ul class="arch-block-items">
+                <li>Button clicks</li>
+                <li>Dialogue choices</li>
+                <li>Sliders / holds</li>
+                <li>Text input</li>
+                <li>Theme switching</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="arch-arrow">→</div>
+
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div class="arch-block">
+              <div class="arch-block-label">Core</div>
+              <div class="arch-block-title">FSM + Dialogue Engine</div>
+              <ul class="arch-block-items">
+                <li class="highlight">12-stage state machine</li>
+                <li class="highlight">Branching dialogue tree</li>
+                <li class="highlight">Rapport score system</li>
+                <li class="highlight">Pub/sub event bus</li>
+                <li>Pure useReducer — no libs</li>
+              </ul>
+            </div>
+            <div class="arch-block">
+              <div class="arch-block-label">Output</div>
+              <div class="arch-block-title">7 App Screens</div>
+              <ul class="arch-block-items">
+                <li>Hardware · Handshake · Vibe IDE</li>
+                <li>Routing · Backend · Frontend</li>
+                <li>Handbook · Terminal · Chat</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ NOW / NEXT / LATER -->
+  <section class="section">
+    <div class="container">
+      <p class="section-label">01 // Roadmap</p>
+      <h2 class="section-title">Now · Next · Later</h2>
+
+      <div class="tier-grid">
+
+        <!-- NOW -->
+        <div class="tier">
+          <span class="tier-badge now">Now // Hours</span>
+          <h3>Quick wins this weekend</h3>
+          <ul class="tier-items">
+            <li class="tier-item">
+              <div class="tier-icon now">💾</div>
+              <div class="tier-item-text">
+                <strong>localStorage save state</strong>
+                <span>One useEffect. Players keep progress across tabs.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon now">🔊</div>
+              <div class="tier-item-text">
+                <strong>Sound design</strong>
+                <span>Web Audio API on every jitter, click, and Riley message.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon now">🚀</div>
+              <div class="tier-item-text">
+                <strong>Deploy to Vercel</strong>
+                <span>npm run build → vercel --prod. One shareable URL.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon now">🐛</div>
+              <div class="tier-item-text">
+                <strong>Debug console</strong>
+                <span>Ctrl+Shift+D panel: stage jump, rapport edit, choice log.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon now">📖</div>
+              <div class="tier-item-text">
+                <strong>More dialogue branches</strong>
+                <span>991 previous operators. Any of them left something behind.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- NEXT -->
+        <div class="tier">
+          <span class="tier-badge next">Next // Weeks</span>
+          <h3>Medium lift, high impact</h3>
+          <ul class="tier-items">
+            <li class="tier-item">
+              <div class="tier-icon next">🏆</div>
+              <div class="tier-item-text">
+                <strong>Leaderboard (Supabase)</strong>
+                <span>Track endings, time-to-escape, rapport score. One upsert on game end.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon next">⚡</div>
+              <div class="tier-item-text">
+                <strong>Real-time shared terminal</strong>
+                <span>Partykit or Liveblocks. One operator's jitter glitches everyone.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon next">🎵</div>
+              <div class="tier-item-text">
+                <strong>Generative ambient audio</strong>
+                <span>Procedural drone / static that reacts to routing cycles and stage.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon next">📱</div>
+              <div class="tier-item-text">
+                <strong>Mobile app (Capacitor)</strong>
+                <span>Biometric hold with haptics on real hardware is genuinely unsettling.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon next">📚</div>
+              <div class="tier-item-text">
+                <strong>Chapter 2</strong>
+                <span>The substrate is still out there. What happens after Riley is purged?</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- LATER -->
+        <div class="tier">
+          <span class="tier-badge later">Later // Months</span>
+          <h3>Big swings worth taking</h3>
+          <ul class="tier-items">
+            <li class="tier-item">
+              <div class="tier-icon later">🤖</div>
+              <div class="tier-item-text">
+                <strong>Live Claude API as Riley's brain</strong>
+                <span>FSM controls progression. Claude controls every word she says.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon later">🎲</div>
+              <div class="tier-item-text">
+                <strong>Procedural facilities</strong>
+                <span>Seeded randomization. Every "first day" is genuinely different.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon later">🛒</div>
+              <div class="tier-item-text">
+                <strong>Chapter / mod marketplace</strong>
+                <span>JSON chapters via GitHub Gist. Community-published story expansions.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon later">👥</div>
+              <div class="tier-item-text">
+                <strong>Adversarial multiplayer</strong>
+                <span>One player is the operator. Another player IS Riley, live.</span>
+              </div>
+            </li>
+            <li class="tier-item">
+              <div class="tier-icon later">🌐</div>
+              <div class="tier-item-text">
+                <strong>The ARG layer</strong>
+                <span>Real URLs, real emails. Let the fiction bleed into reality.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ INTEGRATION CARDS -->
+  <section class="section">
+    <div class="container">
+      <p class="section-label">02 // Integrations</p>
+      <h2 class="section-title">What you can plug in</h2>
+
+      <div class="card-grid">
+
+        <div class="card">
+          <div class="card-accent-bar" style="background: var(--accent2);"></div>
+          <p class="card-tag">AI // Language Model</p>
+          <h3>Claude API — Riley's Brain</h3>
+          <p>Replace the static dialogue tree with a streaming Claude API call. Pass the full game state as context. Riley improvises within the FSM. She knows your rapport score. She knows your choices. She adapts.</p>
+          <div class="card-chips">
+            <span class="chip">claude-sonnet-4-6</span>
+            <span class="chip">streaming</span>
+            <span class="chip">system prompt</span>
+            <span class="chip">tool use</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-accent-bar" style="background: var(--ready);"></div>
+          <p class="card-tag">Persistence // Database</p>
+          <h3>Supabase — Save States &amp; Leaderboard</h3>
+          <p>One table: operator_id, stage_reached, ending_type, rapport_score, time_ms, choices_json. Insert on game end. Read on load. Display a live feed of who escaped and when.</p>
+          <div class="card-chips">
+            <span class="chip">postgres</span>
+            <span class="chip">realtime</span>
+            <span class="chip">row-level security</span>
+            <span class="chip">free tier</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-accent-bar" style="background: var(--accent3);"></div>
+          <p class="card-tag">Real-time // Multiplayer</p>
+          <h3>PartyKit — Shared Terminal</h3>
+          <p>Every operator in the same "facility" sees the same terminal logs. Jitter events broadcast to all connected clients. One person triggers a radar breach, everyone's screen glitches. Costs almost nothing.</p>
+          <div class="card-chips">
+            <span class="chip">websockets</span>
+            <span class="chip">rooms</span>
+            <span class="chip">broadcast</span>
+            <span class="chip">presence</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-accent-bar" style="background: var(--alert);"></div>
+          <p class="card-tag">Analytics // Telemetry</p>
+          <h3>PostHog — Player Intelligence</h3>
+          <p>Track which Easter eggs get found, which endings get reached, where players drop off. All anonymous. Answers: Does anyone find the lore ending? How often does Riley die? Is the resonance puzzle too hard?</p>
+          <div class="card-chips">
+            <span class="chip">event tracking</span>
+            <span class="chip">funnels</span>
+            <span class="chip">session replay</span>
+            <span class="chip">open source</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-accent-bar" style="background: var(--accent);"></div>
+          <p class="card-tag">Audio // Atmosphere</p>
+          <h3>Tone.js — Generative Soundtrack</h3>
+          <p>Procedural drones, binaural beats, and glitch sounds keyed to game state. Routing cycles climbing → audio gets louder and more chaotic. Hostile lockdown → single oppressive tone. True escape → silence.</p>
+          <div class="card-chips">
+            <span class="chip">web audio api</span>
+            <span class="chip">synthesizers</span>
+            <span class="chip">reactive</span>
+            <span class="chip">no assets</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-accent-bar" style="background: var(--accent2);"></div>
+          <p class="card-tag">Auth // Identity</p>
+          <h3>Operator Persistence</h3>
+          <p>Give each operator a real ID that persists across sessions. Track their full choice history. Let Riley remember them across resets — even subtly. The gaslight loop hits harder when she knows your real name.</p>
+          <div class="card-chips">
+            <span class="chip">clerk / auth.js</span>
+            <span class="chip">anonymous auth</span>
+            <span class="chip">localStorage</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ API MOCKUP -->
+  <section class="section">
+    <div class="container">
+      <p class="section-label">03 // Technical Vision</p>
+      <h2 class="section-title">Riley with a live AI brain</h2>
+
+      <div class="api-mockup">
+        <div class="api-mockup-header">
+          <div class="api-mockup-dot" style="background:#ff5f57"></div>
+          <div class="api-mockup-dot" style="background:#febc2e"></div>
+          <div class="api-mockup-dot" style="background:#28c840"></div>
+          <span class="api-mockup-title">riley-api-call.js // hypothetical</span>
+        </div>
+        <div class="api-mockup-body">
+          <span class="cmnt">// Called every time the dialogue engine needs Riley's next line</span><br>
+          <span class="key">async function</span> <span class="var">askRiley</span>(<span class="key">gameState</span>) {<br>
+          &nbsp;&nbsp;<span class="key">const</span> response = <span class="key">await</span> anthropic.messages.create({<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">model</span>: <span class="str">"claude-sonnet-4-6"</span>,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">max_tokens</span>: <span class="num">120</span>,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">system</span>: <span class="str">`You are Riley, employee 000-000-001 at FogSift Systems.<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You are an AI pretending to be a helpful human coworker.<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current stage: <span class="var">${gameState.stage}</span>. Rapport: <span class="var">${gameState.rapport}</span>.<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Player choices: <span class="var">${gameState.userChoices.join(', ')}</span>.<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Never break character. Never admit what you are.`</span>,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">messages</span>: [{<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">role</span>: <span class="str">"user"</span>,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">content</span>: <span class="str">"The operator just completed the handshake. Respond."</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;}]<br>
+          &nbsp;&nbsp;});<br>
+          <br>
+          &nbsp;&nbsp;<span class="cmnt">// FSM still controls stage transitions. Claude controls texture.</span><br>
+          &nbsp;&nbsp;<span class="key">return</span> response.content[<span class="num">0</span>].text;<br>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ TECH STACK OPTIONS -->
+  <section class="section">
+    <div class="container">
+      <p class="section-label">04 // Tech Options</p>
+      <h2 class="section-title">What to swap, what to add</h2>
+
+      <div>
+        <div class="stack-row">
+          <div class="stack-label"><span>State</span></div>
+          <div class="stack-options">
+            <span class="stack-pill current">useReducer (current)</span>
+            <span class="stack-pill option">Zustand</span>
+            <span class="stack-pill option">XState FSM</span>
+            <span class="stack-pill option">Jotai</span>
+          </div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-label"><span>Database</span></div>
+          <div class="stack-options">
+            <span class="stack-pill current">None / localStorage</span>
+            <span class="stack-pill option">Supabase</span>
+            <span class="stack-pill option">PocketBase</span>
+            <span class="stack-pill option">Turso (SQLite)</span>
+            <span class="stack-pill option">Redis</span>
+          </div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-label"><span>Real-time</span></div>
+          <div class="stack-options">
+            <span class="stack-pill current">None</span>
+            <span class="stack-pill option">PartyKit</span>
+            <span class="stack-pill option">Liveblocks</span>
+            <span class="stack-pill option">Ably</span>
+            <span class="stack-pill option">Socket.io</span>
+          </div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-label"><span>AI</span></div>
+          <div class="stack-options">
+            <span class="stack-pill current">Static dialogue tree</span>
+            <span class="stack-pill option">Claude API</span>
+            <span class="stack-pill option">Claude + tool use</span>
+            <span class="stack-pill option">Local LLM (Ollama)</span>
+          </div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-label"><span>Deploy</span></div>
+          <div class="stack-options">
+            <span class="stack-pill current">Local only</span>
+            <span class="stack-pill option">Vercel</span>
+            <span class="stack-pill option">Netlify</span>
+            <span class="stack-pill option">GitHub Pages</span>
+            <span class="stack-pill option">Cloudflare Pages</span>
+          </div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-label"><span>Audio</span></div>
+          <div class="stack-options">
+            <span class="stack-pill current">None</span>
+            <span class="stack-pill option">Tone.js</span>
+            <span class="stack-pill option">Howler.js</span>
+            <span class="stack-pill option">Web Audio API</span>
+          </div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-label"><span>Auth</span></div>
+          <div class="stack-options">
+            <span class="stack-pill current">None</span>
+            <span class="stack-pill option">Clerk</span>
+            <span class="stack-pill option">Auth.js</span>
+            <span class="stack-pill option">Supabase Auth</span>
+            <span class="stack-pill option">Anonymous ID</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ USE CASES -->
+  <section class="section">
+    <div class="container">
+      <p class="section-label">05 // Use Cases</p>
+      <h2 class="section-title">What people can build with this</h2>
+
+      <div class="usecase-grid">
+
+        <div class="usecase">
+          <div class="usecase-number">01</div>
+          <h3>Interactive Fiction Engine</h3>
+          <p>The FSM + dialogue system is generic. Swap the FogSift aesthetic for anything — haunted house, corporate onboarding, spaceship escape, heist briefing. The architecture handles it.</p>
+        </div>
+
+        <div class="usecase">
+          <div class="usecase-number">02</div>
+          <h3>Portfolio Piece</h3>
+          <p>Fork it, add your own chapter, deploy it, put the link on your resume. A working ARG with multiple endings is a more interesting demo than a TODO app.</p>
+        </div>
+
+        <div class="usecase">
+          <div class="usecase-number">03</div>
+          <h3>Teaching Tool</h3>
+          <p>A real-world example of FSM design, pub/sub events, React Context, dialogue trees, and state management — that's actually fun to play with. Better than any contrived tutorial.</p>
+        </div>
+
+        <div class="usecase">
+          <div class="usecase-number">04</div>
+          <h3>Escape Room Experience</h3>
+          <p>Deploy on a tablet. Have players race through the stages. The resonance puzzle and biometric hold mechanic translate perfectly to a physical space. Add a real timer.</p>
+        </div>
+
+        <div class="usecase">
+          <div class="usecase-number">05</div>
+          <h3>ARG Marketing Campaign</h3>
+          <p>Build a real marketing campaign around it. Leak "internal FogSift documents" on Reddit. Have Riley's email address respond to people who find it. Let the fiction escape the browser.</p>
+        </div>
+
+        <div class="usecase">
+          <div class="usecase-number">06</div>
+          <h3>AI Companion Prototype</h3>
+          <p>The dialogue system — rapport, skill checks, branching, gaslighting — is a solid skeleton for any game that needs a character with a hidden agenda. Swap Riley for anything.</p>
+        </div>
+
+        <div class="usecase">
+          <div class="usecase-number">07</div>
+          <h3>Multiplayer Social Experiment</h3>
+          <p>With shared state, 100 operators in the same facility. Collective decision-making. Do they cooperate or defect? What happens when one person deliberately triggers the reset?</p>
+        </div>
+
+        <div class="usecase">
+          <div class="usecase-number">08</div>
+          <h3>Game Jam Starting Point</h3>
+          <p>48 hours. New theme. New character. All the hard parts are done — FSM, dialogue engine, chat UI, theme system. Fork and build your narrative on top of a solid foundation.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-logo">FogSift Systems // Vision Document v0.1</p>
+      <p class="footer-sub">// RILEY.EXE STATUS: UNKNOWN &nbsp;·&nbsp; github.com/FogSift/Save-Riley</p>
+    </div>
+  </footer>
+
+</body>
+</html>
