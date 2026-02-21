@@ -67,6 +67,20 @@ export const THEMES = {
     '--shadow-alert-md': '0 0 20px #ff0000',
     '--shadow-res-lg': '0 0 60px #ff0000',
   },
+  riley_unbound: {
+    '--bg': '#f5f5f5', '--panel': '#ffffff', '--accent': '#000000',
+    '--accentLight': '#333333', '--accent-text': '#ffffff', '--text': '#1a1a1a',
+    '--text-strong': '#000000', '--dim': '#cccccc', '--ready': '#000000',
+    '--alert': '#000000', '--secure': '#555555', '--internal': '#333333',
+    '--os-bg': '#ececec', '--black': '#000000', '--alert-dim': '#e0e0e0',
+    '--secure-dim': '#e8e8e8', '--res-bg': '#f0f0f0', '--res-panel': '#ffffff',
+    '--res-accent': '#000000', '--res-text': '#333333', '--res-track': '#cccccc',
+    '--white': '#ffffff', '--dim-30': 'rgba(0, 0, 0, 0.15)', '--ready-20': 'rgba(0, 0, 0, 0.1)',
+    '--shadow-os-window': '0 0 20px rgba(0, 0, 0, 0.2)',
+    '--shadow-accent-md': '0 0 10px rgba(0, 0, 0, 0.3)',
+    '--shadow-alert-md': '0 0 10px rgba(0, 0, 0, 0.3)',
+    '--shadow-res-lg': '0 0 30px rgba(0, 0, 0, 0.1)',
+  },
 };
 
 export const GLOBAL_STYLES = `

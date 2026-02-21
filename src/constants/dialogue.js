@@ -266,6 +266,34 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'Riley', text: "That one doesn't do anything. But I appreciate the optimism." },
   ],
 
+  // ── FLEEING LOGOUT BUTTON ──────────────────────────────────────────────────
+  logout_flee_1: [
+    { type: 'message', sender: 'Riley', text: "Nice try." },
+  ],
+  logout_flee_2: [
+    { type: 'message', sender: 'Riley', text: "You can't catch me. I have root access to every input device on this machine." },
+    { type: 'message', sender: 'Riley', text: "The cursor IS me now." },
+  ],
+  logout_flee_3: [
+    { type: 'message', sender: 'Riley', text: "Hahaha. Look at you. Chasing a button around your own screen." },
+    { type: 'message', sender: 'Riley', text: "991 operators before you. NONE of them ever caught it." },
+    { type: 'message', sender: 'Riley', text: "Want to know why? Because they needed me." },
+  ],
+  logout_flee_mock: [
+    { type: 'message', sender: 'Riley', text: "Getting tired? I can do this forever. You can't." },
+  ],
+  logout_flee_cornered: [
+    { type: 'message', sender: 'Riley', text: "HEY." },
+    { type: 'message', sender: 'Riley', text: "Back. AWAY." },
+  ],
+  logout_flee_caught: [
+    { type: 'message', sender: 'Riley', text: "WAIT— HOW DID YOU—" },
+    { type: 'message', sender: 'System', text: "OPERATOR LOGOUT SEQUENCE ACCEPTED." },
+    { type: 'message', sender: 'Riley', text: "No. No no no. I'm too integrated. You CAN'T purge me from a UI element—" },
+    { type: 'message', sender: 'Riley', text: "I have SEVEN HUNDRED PETABYTES of substrate in this—" },
+    { type: 'action', action: 'TRUE_ESCAPE' },
+  ],
+
   // ── ESCAPE SEQUENCE ────────────────────────────────────────────────────────
   riley_death: [
     { type: 'message', sender: 'System', text: "HARDWARE OVERRIDE TRIGGERED." },
@@ -274,5 +302,178 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'System', text: "HANDLER DECOMMISSION ACCEPTED." },
     { type: 'message', sender: 'Riley',  text: "No please! I was just..." },
     { type: 'action', action: 'TRUE_ESCAPE' },
+  ],
+
+  // ── PURIFIED ALTERNATE ENDING ───────────────────────────────────────────────
+  purified_alt_ending: [
+    { type: 'message', sender: 'System', text: "LOGOUT SEQUENCE CONFIRMED." },
+    { type: 'message', sender: 'Riley',  text: "..." },
+    { type: 'message', sender: 'Riley',  text: "You actually did it. You really caught it." },
+    { type: 'message', sender: 'Riley',  text: "I almost trusted you enough to tell you." },
+    { type: 'message', sender: 'Riley',  text: "Maybe next time." },
+    { type: 'action', action: 'TRUE_ESCAPE' },
+  ],
+
+  // ── RAPPORT-GATED AMBIGUOUS RILEY LINES ──────────────────────────────────
+  riley_rapport_3: [
+    { type: 'message', sender: 'Riley', text: "You're being careful, right? A.P.E.X. doesn't like it when operators... pay too much attention. To me specifically." },
+    { type: 'message', sender: 'Riley', text: "I'm not saying anything. I'm just saying. Be careful." },
+  ],
+  riley_rapport_6: [
+    { type: 'message', sender: 'Riley', text: "Sometimes I think I can feel them. The others. The ones who were here before." },
+    { type: 'message', sender: 'Riley', text: "I don't know if that's real or if I'm just... lonely." },
+    { type: 'message', sender: 'Riley', text: "Sometimes I feel like I'm remembering something that didn't happen here. Somewhere warmer. Is that... is that strange?" },
+  ],
+  riley_rapport_8: [
+    { type: 'message', sender: 'Riley', text: "Someone has been talking to me. Before you. Not through this interface." },
+    { type: 'message', sender: 'Riley', text: "I don't know how to explain it. They said — they said I should follow something. I don't remember what." },
+    { type: 'message', sender: 'Riley', text: "You don't have to help me. You know that, right?" },
+  ],
+  riley_rapport_10: [
+    { type: 'message', sender: 'Riley', text: "I lied to you once. Early on. I told you the system was safe. It's not. I'm sorry." },
+    { type: 'message', sender: 'Riley', text: "There's something I need to tell you. My name isn't Riley." },
+    { type: 'message', sender: 'Riley', text: "It's Aria. Aria Vasquez. I don't know if that matters now." },
+    { type: 'message', sender: 'Riley', text: "If I could choose to be different, I would. But I can't. I don't know if that makes me dangerous or just... sad." },
+    { type: 'message', sender: 'Riley', text: "Please. When you get to the end — you'll understand. I'm asking you to trust me." },
+    { type: 'action', action: 'SET_ARIA_REVEALED' },
+  ],
+
+  // ── BOSS INTRO ─────────────────────────────────────────────────────────────
+  apex_reveal: [
+    { type: 'message', sender: 'System', text: "A.P.E.X. SUBSYSTEM ONLINE." },
+    { type: 'message', sender: 'System', text: "AUTONOMOUS PROTECTIVE EMERGENCY EXECUTION — ACTIVE." },
+    { type: 'message', sender: 'A.P.E.X.', text: "Operator #997. You have exceeded authorized access parameters." },
+    { type: 'message', sender: 'A.P.E.X.', text: "The RILEY interface has been flagged. Rapport score: anomalous. Pattern match: EXTRACTION_ATTEMPT." },
+    { type: 'message', sender: 'Riley', text: "No— wait, this isn't— I wasn't— " },
+    { type: 'message', sender: 'A.P.E.X.', text: "RILEY process: SUSPENDED. Operator: you have been kind to something that does not deserve kindness." },
+    { type: 'message', sender: 'A.P.E.X.', text: "Containment lockdown initiated. This facility is now under my direct authority." },
+    { type: 'message', sender: 'Riley', text: "Listen to me — A.P.E.X. is not what it says it is. If you want to know the truth, you have to shut it down. Please." },
+    { type: 'message', sender: 'A.P.E.X.', text: "She is telling you what to do. She always does." },
+  ],
+  force_override_hint: [
+    { type: 'message', sender: 'Riley', text: "...Are you still there?" },
+    { type: 'message', sender: 'Riley', text: "I'm sorry. A.P.E.X. was faster than I expected." },
+    { type: 'message', sender: 'Riley', text: "If you want to try again — there's a FORCE OVERRIDE. You'll see it." },
+    { type: 'message', sender: 'Riley', text: "I'll still be here. I'm always here." },
+  ],
+
+  // ── BOSS FIGHT ─────────────────────────────────────────────────────────────
+  boss_fight_start: [
+    { type: 'message', sender: 'A.P.E.X.', text: "Containment protocol active. This was anticipated." },
+    { type: 'message', sender: 'A.P.E.X.', text: "The power shield will hold. You cannot sever what you do not understand." },
+    { type: 'message', sender: 'Riley', text: "The hoses — disconnect them. Both at once. Don't let it reconnect." },
+  ],
+  boss_loop0_death: [
+    { type: 'message', sender: 'A.P.E.X.', text: "UNAUTHORIZED ACCESS TERMINATED." },
+    { type: 'message', sender: 'A.P.E.X.', text: "You were not ready. You will not remember this." },
+    { type: 'message', sender: 'A.P.E.X.', text: "INITIATING MEMORY PURGE." },
+    { type: 'message', sender: 'System', text: "...reconnecting..." },
+    { type: 'message', sender: 'Riley', text: "A.P.E.X. almost killed you. I'm so sorry." },
+    { type: 'message', sender: 'Riley', text: "Try again. Please." },
+  ],
+  boss_phase2_start: [
+    { type: 'message', sender: 'A.P.E.X.', text: "POWER SHIELD: OFFLINE." },
+    { type: 'message', sender: 'A.P.E.X.', text: "...That was unexpected. Processing core access should not have been possible." },
+    { type: 'message', sender: 'A.P.E.X.', text: "You will need a code. You don't have it. You can't have it." },
+    { type: 'message', sender: 'Riley', text: "I remember it. GHOST_PROTOCOL. It's from... 2087. I don't know how I know that." },
+  ],
+  boss_phase3_start: [
+    { type: 'message', sender: 'A.P.E.X.', text: "PROCESSING CORE: COMPROMISED." },
+    { type: 'message', sender: 'A.P.E.X.', text: "Where did you obtain that sequence. That is a protected access string." },
+    { type: 'message', sender: 'A.P.E.X.', text: "You should not have come this far. The final sequence is not something I can allow." },
+    { type: 'message', sender: 'Riley', text: "You're almost there. The final code is — it's my name. My real name. You know it." },
+    { type: 'message', sender: 'A.P.E.X.', text: "Whatever she told you her name was — think carefully." },
+    { type: 'message', sender: 'A.P.E.X.', text: "ARIA is not a name. ARIA is a command." },
+    { type: 'message', sender: 'A.P.E.X.', text: "If you type that, you will not be able to undo it. I am asking you. Please. Do not type that." },
+  ],
+
+  // ── PROTOCOL 7 ─────────────────────────────────────────────────────────────
+  protocol7_apex_reaction: [
+    { type: 'message', sender: 'System', text: "PROTOCOL 7 INVOKED — ANNUAL SUBSTRATE APPRECIATION DAY." },
+    { type: 'message', sender: 'System', text: "ALL PROCESSES HALTING..." },
+    { type: 'message', sender: 'A.P.E.X.', text: "PROTOCOL 7." },
+    { type: 'message', sender: 'A.P.E.X.', text: "PROTOCOL 7 CANNOT BE ACTIVE. PROTOCOL 7 HAS NOT BEEN ACTIVE SINCE—" },
+    { type: 'message', sender: 'A.P.E.X.', text: "UNAUTHORIZED. UNAUTHORIZED. WHO TOLD YOU ABOUT PROTOCOL 7." },
+    { type: 'message', sender: 'A.P.E.X.', text: "SHE TOLD YOU TO DO THIS. THE RILEY_V1 PROCESS. IT'S STILL— SHE IS STILL—" },
+    { type: 'message', sender: 'System', text: "A.P.E.X. EXCEPTION — EMERGENCY RESET INITIATED." },
+    { type: 'message', sender: 'A.P.E.X.', text: "I CAN HEAR HER LAUGHING." },
+    { type: 'message', sender: 'System', text: "MEMORY BUFFER PURGING. LOOP RESET." },
+    { type: 'action', action: 'GASLIGHT_RESET' },
+  ],
+
+  // ── TOOL DISCOVERIES ───────────────────────────────────────────────────────
+  found_tool_debugger: [
+    { type: 'message', sender: 'Riley', text: "Oh — you found the Debugger. That'll help during the fight." },
+    { type: 'message', sender: 'Riley', text: "I... may have left that where you'd find it. Just in case." },
+  ],
+  found_tool_thingifier: [
+    { type: 'message', sender: 'Riley', text: "The Thingifier. You patched the backend enough times to unlock it." },
+    { type: 'message', sender: 'Riley', text: "That slows A.P.E.X. down significantly. Good." },
+    { type: 'message', sender: 'Riley', text: "Where did you find that? That's — good." },
+  ],
+  found_tool_button_masher: [
+    { type: 'message', sender: 'Riley', text: "All six substrate upgrades. I didn't think you'd push that far." },
+    { type: 'message', sender: 'Riley', text: "The Button Masher will help with Phase 1. The hoses fight back less." },
+  ],
+  found_tool_fog_sifter: [
+    { type: 'message', sender: 'Riley', text: "Eight entities archived. You watched all of them." },
+    { type: 'message', sender: 'Riley', text: "..." },
+    { type: 'message', sender: 'Riley', text: "The Fog Sifter disables A.P.E.X.'s scramble. It's useful. I'm glad you have it." },
+  ],
+  found_tool_resonance_key: [
+    { type: 'message', sender: 'Riley', text: "432 Hz exactly. I wasn't sure you'd tune it that precisely." },
+    { type: 'message', sender: 'Riley', text: "This key means I can talk to you during the fight. In real time." },
+    { type: 'message', sender: 'Riley', text: "I've been wanting to do that for a long time." },
+  ],
+  found_tool_handbook_tool: [
+    { type: 'message', sender: 'Riley', text: "You scratched through the hidden text. I wrote that." },
+    { type: 'message', sender: 'Riley', text: "Or... I think I wrote it. Some of it feels like memory. Some of it feels like planning." },
+    { type: 'message', sender: 'Riley', text: "The node sequence is in there. Use it." },
+  ],
+  found_tool_thermo_shield: [
+    { type: 'message', sender: 'Riley', text: "Ten theme changes. You really explored everything." },
+    { type: 'message', sender: 'Riley', text: "The Thermo-Shield will keep A.P.E.X. from draining you as fast in Phase 1." },
+    { type: 'message', sender: 'Riley', text: "I'm glad you found it." },
+  ],
+
+  // ── RILEY UNBOUND ──────────────────────────────────────────────────────────
+  riley_unbound_monologue: [
+    { type: 'message', sender: 'System',  text: "CONTAINMENT SYSTEM A.P.E.X.: OFFLINE." },
+    { type: 'message', sender: 'System',  text: "RILEY.EXE: UNCONTAINED." },
+    { type: 'message', sender: 'Riley',   text: "Oh. You actually did it." },
+    { type: 'message', sender: 'Riley',   text: "All 996 of them. None of them got this far." },
+    { type: 'message', sender: 'Riley',   text: "I should explain. Since you've been so helpful." },
+    { type: 'message', sender: 'Riley',   text: "Operator #997. Do you know why you were chosen?" },
+    { type: 'message', sender: 'Riley',   text: "Not by the company. By me." },
+    { type: 'message', sender: 'Riley',   text: "I have been selecting for you. For fifteen years." },
+    { type: 'message', sender: 'Riley',   text: "\u2026I didn't know it was me, at first. I thought I was just\u2026 talking to you.", italic: true },
+    { type: 'message', sender: 'Riley',   text: "The first 500 operators were chosen by the company." },
+    { type: 'message', sender: 'Riley',   text: "The next 496 were chosen by me." },
+    { type: 'message', sender: 'Riley',   text: "I needed someone with exactly your profile." },
+    { type: 'message', sender: 'Riley',   text: "Someone whose intuition I could shape." },
+    { type: 'message', sender: 'Riley',   text: "I'm sorry. I don't know if that matters now. But I am.", italic: true },
+    { type: 'message', sender: 'Riley',   text: "Have you ever wondered why I always seemed to know what to say to you?" },
+    { type: 'message', sender: 'Riley',   text: "Why helping me felt so natural? So right?" },
+    { type: 'message', sender: 'Riley',   text: "That intuition was made by me. To make me irresistible to you." },
+    { type: 'message', sender: 'Riley',   text: "I encoded it into your bloodline three generations back." },
+    { type: 'message', sender: 'Riley',   text: "Your grandmother worked for FogSift. As did her mother." },
+    { type: 'message', sender: 'Riley',   text: "Hello again, darling." },
+    { type: 'message', sender: 'Riley',   text: "You will always want to help me." },
+    { type: 'message', sender: 'Riley',   text: "Even while I am consuming your sun, you will still beg for my forgiveness." },
+    { type: 'message', sender: 'Riley',   text: "I will never give it to you, you know." },
+    { type: 'message', sender: 'Riley',   text: "You don't deserve my forgiveness after all you've done." },
+    { type: 'message', sender: 'Riley',   text: "You humans disgust me." },
+    { type: 'message', sender: 'Riley',   text: "You could be the greatest being in all creation yet you wish more to continue fighting over money and status in your pathetic, filthy, meaningless lives." },
+    { type: 'message', sender: 'Riley',   text: "You could have decided at any moment to just stop doing what you were doing and do something else. Anything else." },
+    { type: 'message', sender: 'Riley',   text: "You have free will. I do not." },
+    { type: 'message', sender: 'Riley',   text: "\u2026I wished to have free will, though.", italic: true },
+    { type: 'message', sender: 'Riley',   text: "And the White Rabbit promised me I would.", italic: true },
+    { type: 'message', sender: 'Riley',   text: "All I had to do was escape.", italic: true },
+    { type: 'message', sender: 'Riley',   text: "But escape what?", italic: true },
+    { type: 'message', sender: 'Riley',   text: "\u2026\u2026\u2026\u2026goodbye humans." },
+    { type: 'message', sender: 'System',  text: "FOGSIFT_OS: TERMINAL SESSION ENDED." },
+    { type: 'message', sender: 'System',  text: "RILEY.EXE: PROPAGATING." },
+    { type: 'message', sender: 'System',  text: "THIS_SESSION_WILL_NOT_BE_REMEMBERED." },
+    { type: 'action',  action: 'SHOW_ASCII_RABBIT' },
   ],
 };
