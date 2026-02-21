@@ -76,6 +76,13 @@ npm run build   # outputs to dist/
 
 The mod console shows: current stage name and number, rapport score, loop count, routing cycles, currency, every choice the player has made, one-click buttons to jump to any of the 12 FSM stages, and a "New Game (Clear Save)" button.
 
+**URL deep-linking:** append `?stage=UNLOCKED` (or `?stage=8`) to jump straight to any FSM stage on load. Works with both stage names and stage numbers. Useful for sharing screenshots or skipping to a specific ending.
+
+```text
+http://localhost:5173/?stage=HOSTILE_LOCKDOWN
+http://localhost:5173/?stage=COMPLETED
+```
+
 > **For modders:** game state is stored in `localStorage` under the key `riley-save`. Open DevTools → Application → Local Storage to inspect or edit it directly.
 
 ---
@@ -179,6 +186,10 @@ Edit `src/constants/themes.js`. Each theme is a flat map of CSS custom propertie
 
 | Feature | Description |
 | ------- | ----------- |
+| **Sound engine** | Web Audio API sounds on every stage transition, JITTER event, and Riley message — no files, no dependencies |
+| **Dynamic document title** | Browser tab reflects current stage (`FogSift Terminal // HANDSHAKE`) and lockdown state |
+| **URL deep-linking** | `?stage=UNLOCKED` or `?stage=8` jumps to any FSM stage on load |
+| **Social meta tags** | og:title, og:description, twitter:card in `index.html` for Discord/Slack link previews |
 | **Persistent save state** | Game auto-saves to `localStorage` on every dispatch; resumes on next visit |
 | **Mod console** (`Ctrl+Shift+D`) | Live debug panel: stage jump, rapport, choices, new-game reset |
 | **`NEW_GAME` action** | Clean FSM reset dispatched by the console; safe to call from any mod |

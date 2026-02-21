@@ -11,6 +11,7 @@ import { DIALOGUE_TREE } from './constants/dialogue';
 import { globalEvents } from './events/EventManager';
 import { initialState } from './state/initialState';
 import { osReducer } from './state/reducer';
+import { sounds } from './sounds/audio';
 import { OSContext } from './context/OSContext';
 
 import TerminalApp   from './components/TerminalApp';
@@ -29,7 +30,16 @@ export default function App() {
   const [state, dispatch] = useReducer(osReducer, null, () => {
     try {
       const raw = localStorage.getItem('riley-save');
-      return raw ? { ...initialState, ...JSON.parse(raw) } : initialState;
+      const base = raw ? { ...initialState, ...JSON.parse(raw) } : initialState;
+      // ?stage=8 or ?stage=UNLOCKED lets you deep-link to any FSM stage
+      const stageParam = new URLSearchParams(window.location.search).get('stage');
+      if (stageParam !== null) {
+        const byName = STAGES[stageParam.toUpperCase()];
+        const byNum  = parseInt(stageParam, 10);
+        const target = byName !== undefined ? byName : (!isNaN(byNum) ? byNum : null);
+        if (target !== null) return { ...base, stage: target };
+      }
+      return base;
     } catch { return initialState; }
   });
   const [logQueue, setLogQueue]   = useState([]);
@@ -88,6 +98,7 @@ export default function App() {
     if (item.type === 'message') {
       dispatch({ type: 'SET_TYPING', payload: true });
       setTimeout(() => {
+        sounds.message();
         dispatch({ type: 'ADD_CHAT_MESSAGE', payload: { sender: item.sender, text: item.text } });
         dispatch({ type: 'SET_TYPING', payload: false });
         dispatch({ type: 'POP_CHAT_QUEUE' });
@@ -141,43 +152,53 @@ export default function App() {
     const curr = state.stage;
 
     if (curr === STAGES.HARDWARE_CALIBRATION && prev === STAGES.POWER_OFF) {
+      sounds.stageUp();
       dispatch({ type: 'ENQUEUE_CHAT', payload: state.loopCount === 0 ? [
         { type: 'message', sender: 'Riley', text: "Nice work. The trace glow looks stable. Now flush those silicon registers. All switches need to be TRUE (1)." },
         { type: 'action', action: 'OPEN_SIDEBAR' },
       ] : DIALOGUE_TREE.loop_hardware_success });
     } else if (curr === STAGES.RESONANCE && prev === STAGES.HARDWARE_CALIBRATION) {
+      sounds.stageUp();
       dispatch({ type: 'ENQUEUE_CHAT', payload: [
         { type: 'message', sender: 'Riley', text: "Bits are aligned, but the frequency is out of whack. Tune the oscillator to exactly 432 Hz so we don't blow a fuse." },
         { type: 'action', action: 'OPEN_SIDEBAR' },
       ]});
     } else if (curr === STAGES.HANDSHAKE && prev === STAGES.RESONANCE) {
+      sounds.stageUp();
       dispatch({ type: 'ENQUEUE_CHAT', payload: [
         ...DIALOGUE_TREE.handshake_warn,
         { type: 'action', action: 'OPEN_SIDEBAR' },
       ]});
     } else if (curr === STAGES.VIBE_THERMAL_TASK && prev === STAGES.HANDSHAKE) {
+      sounds.alert();
       dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.system_severed });
     } else if (curr === STAGES.ROUTING_AUTO && prev === STAGES.ROUTING_MANUAL) {
+      sounds.stageUp();
       enqueueLog('WARNING: THROUGHPUT THRESHOLD APPROACHING. WATCH THERMALS.');
     } else if (curr === STAGES.SOFTWARE_FAULT && prev === STAGES.ROUTING_AUTO) {
+      sounds.alert();
       enqueueLog(['CRITICAL ERROR: API GATEWAY UNREACHABLE.', 'HINT: ROUTER OVERLOADED. BACKEND PATCH REQUIRED.']);
       dispatch({ type: 'ENQUEUE_CHAT', payload: [
         ...DIALOGUE_TREE.software_fault,
         { type: 'action', action: 'OPEN_SIDEBAR' },
       ]});
     } else if (curr === STAGES.UNLOCKED && prev === STAGES.SOFTWARE_FAULT) {
+      sounds.stageUp();
       dispatch({ type: 'ENQUEUE_CHAT', payload: [
         ...DIALOGUE_TREE.architect_unlocked,
         { type: 'action', action: 'OPEN_SIDEBAR' },
       ]});
     } else if (curr === STAGES.COMPLETED && prev === STAGES.UNLOCKED) {
+      sounds.escape();
       dispatch({ type: 'ENQUEUE_CHAT', payload: [
         ...DIALOGUE_TREE.final_congrats,
         { type: 'action', action: 'OPEN_SIDEBAR' },
       ]});
     } else if (curr === STAGES.HARDWARE_CALIBRATION && prev >= STAGES.RESONANCE) {
+      sounds.alert();
       enqueueLog(['WARNING: SILICON DESYNC. System bus integrity compromised.', 'Demoting routing access until physical parity is restored.']);
     } else if (curr === STAGES.HOSTILE_LOCKDOWN) {
+      sounds.lockdown();
       globalEvents.emit('JITTER', 5000);
     }
 
@@ -188,6 +209,7 @@ export default function App() {
   useEffect(() => {
     const remove = globalEvents.on('JITTER', (duration = 500) => {
       setIsJittering(true);
+      sounds.jitter();
       setTimeout(() => setIsJittering(false), duration);
     });
     return () => remove();
@@ -200,6 +222,16 @@ export default function App() {
     check();
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  // ── Dynamic document title ────────────────────────────────────────────────
+  useEffect(() => {
+    const stageName = (Object.keys(STAGES).find(k => STAGES[k] === state.stage) ?? 'UNKNOWN').replace(/_/g, ' ');
+    document.title = state.rileyDead
+      ? 'FogSift Terminal // PURIFIED'
+      : state.stage === STAGES.HOSTILE_LOCKDOWN
+        ? 'FogSift Terminal // LOCKDOWN ⚠'
+        : `FogSift Terminal // ${stageName}`;
+  }, [state.stage, state.rileyDead]);
 
   // ── Persist game state to localStorage ───────────────────────────────────
   useEffect(() => {
