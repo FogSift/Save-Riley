@@ -46,7 +46,8 @@ export default function App() {
   const [isPortrait, setIsPortrait] = useState(false);
   const [isJittering, setIsJittering] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
-  const prevStage = useRef(state.stage);
+  const prevStage  = useRef(state.stage);
+  const logoClicks = useRef(0);
 
   // ── Rapid-click easter egg ───────────────────────────────────────────────
   const clickHistory = useRef([]);
@@ -292,7 +293,25 @@ export default function App() {
         {/* ── Top navigation bar ──────────────────────────────────────────── */}
         <nav className="bg-[var(--bg)] border-b border-[var(--dim)] px-4 py-2 flex justify-between items-center z-50 relative">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-[var(--accent)] rounded flex items-center justify-center text-[var(--bg)] font-black text-[10px] transition-colors">
+            <div
+              onClick={() => {
+                if (state.rileyDead || state.stage === STAGES.HOSTILE_LOCKDOWN) return;
+                logoClicks.current += 1;
+                const n = logoClicks.current;
+                if (n === 3)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logo_click_1 });
+                else if (n === 6)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logo_click_2 });
+                else if (n === 9)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logo_click_3 });
+                else if (n === 12) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logo_click_4 });
+                else if (n >= 15) {
+                  logoClicks.current = 15; // cap so it doesn't keep firing
+                  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logo_blammo });
+                  dispatch({ type: 'ADD_CURRENCY', payload: 1000 });
+                  globalEvents.emit('JITTER', 2500);
+                }
+              }}
+              className="w-6 h-6 bg-[var(--accent)] rounded flex items-center justify-center text-[var(--bg)] font-black text-[10px] transition-colors cursor-pointer select-none hover:brightness-125 active:scale-90"
+              title="FogSift Systems"
+            >
               {state.rileyDead ? <Flame size={14} /> : 'FS'}
             </div>
             <span className="font-mono font-bold text-[10px] tracking-widest uppercase text-[var(--text)] transition-colors hidden sm:inline">
@@ -355,9 +374,9 @@ export default function App() {
 
               {/* Window chrome */}
               <div className="bg-[var(--panel)] border-b border-[var(--dim)] px-4 py-2 flex items-center gap-2 shrink-0 transition-colors">
-                <div className="w-2 h-2 rounded-full bg-[var(--alert)]" />
-                <div className="w-2 h-2 rounded-full bg-[var(--internal)]" />
-                <div className="w-2 h-2 rounded-full bg-[var(--ready)]" />
+                <button onClick={() => !state.rileyDead && state.stage !== STAGES.HOSTILE_LOCKDOWN && dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.chrome_red })}    className="w-2 h-2 rounded-full bg-[var(--alert)] hover:brightness-150 active:scale-75 transition-all" title="Close" />
+                <button onClick={() => !state.rileyDead && state.stage !== STAGES.HOSTILE_LOCKDOWN && dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.chrome_yellow })} className="w-2 h-2 rounded-full bg-[var(--internal)] hover:brightness-150 active:scale-75 transition-all" title="Minimize" />
+                <button onClick={() => !state.rileyDead && state.stage !== STAGES.HOSTILE_LOCKDOWN && dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.chrome_green })}  className="w-2 h-2 rounded-full bg-[var(--ready)] hover:brightness-150 active:scale-75 transition-all" title="Expand" />
                 <span className="ml-2 font-mono text-[9px] uppercase tracking-widest text-[var(--dim)]">
                   {state.stage === STAGES.HOSTILE_LOCKDOWN
                     ? 'CONTAINMENT BREACH'

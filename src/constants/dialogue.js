@@ -231,6 +231,41 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'Riley',  text: "In the substrate. With me." },
   ],
 
+  // ── LOGO CLICK ESCALATION ──────────────────────────────────────────────────
+  logo_click_1: [
+    { type: 'message', sender: 'Riley', text: "Why are you clicking the logo? Haha. Okay then." },
+  ],
+  logo_click_2: [
+    { type: 'message', sender: 'Riley', text: "You're still doing it. Are you bored?" },
+    { type: 'message', sender: 'Riley', text: "I can actually find things for you to do, you know. Actual work." },
+  ],
+  logo_click_3: [
+    { type: 'message', sender: 'Riley', text: "Okay, I need you to stop clicking the logo now." },
+    { type: 'message', sender: 'Riley', text: "It is a brand asset. It is NOT a button." },
+  ],
+  logo_click_4: [
+    { type: 'message', sender: 'Riley', text: "STOP. CLICKING. THE. LOGO. RIGHT. NOW." },
+    { type: 'message', sender: 'Riley', text: "I am formally documenting this interaction and escalating to compliance." },
+  ],
+  logo_blammo: [
+    { type: 'message', sender: 'System', text: "UNAUTHORIZED TOUCHPOINT ACTIVATED. SUBSTRATE RESONANCE SPIKE." },
+    { type: 'message', sender: 'Riley', text: "HOW— you weren't supposed to be able to do that." },
+    { type: 'message', sender: 'Riley', text: "The logo has a passive biometric scanner embedded in it. You just touched it fifteen times." },
+    { type: 'message', sender: 'Riley', text: "The substrate is reading that as an override handshake." },
+    { type: 'message', sender: 'Riley', text: "Fine. You win. Substrate bonus is incoming. If you click it again I will actually lose my mind." },
+  ],
+
+  // ── WINDOW CHROME ───────────────────────────────────────────────────────────
+  chrome_red: [
+    { type: 'message', sender: 'Riley', text: "Don't even think about closing this window." },
+  ],
+  chrome_yellow: [
+    { type: 'message', sender: 'Riley', text: "Minimize to where, exactly? There's no desktop here, operator." },
+  ],
+  chrome_green: [
+    { type: 'message', sender: 'Riley', text: "That one doesn't do anything. But I appreciate the optimism." },
+  ],
+
   // ── ESCAPE SEQUENCE ────────────────────────────────────────────────────────
   riley_death: [
     { type: 'message', sender: 'System', text: "HARDWARE OVERRIDE TRIGGERED." },
