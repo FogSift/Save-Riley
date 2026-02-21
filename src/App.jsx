@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useReducer } from 'react';
 import {
   Network, Cpu, Globe, Terminal, Fingerprint, Palette,
   BrainCircuit, MessageSquare, BookOpen, Smartphone,
-  Flame, LogOut, Skull, X,
+  Flame, LogOut, Skull, X, Zap,
 } from 'lucide-react';
 
 import { STAGES } from './constants/stages';
@@ -25,6 +25,7 @@ import RoutingApp   from './components/apps/RoutingApp';
 import BackendApp   from './components/apps/BackendApp';
 import FrontendApp  from './components/apps/FrontendApp';
 import HandbookApp  from './components/apps/HandbookApp';
+import BossApp      from './components/apps/BossApp';
 
 export default function App() {
   const [state, dispatch] = useReducer(osReducer, null, () => {
@@ -48,6 +49,18 @@ export default function App() {
   const [debugOpen, setDebugOpen] = useState(false);
   const prevStage  = useRef(state.stage);
   const logoClicks = useRef(0);
+
+  // ── Fleeing logout button state ───────────────────────────────────────────
+  const [fleePos,    setFleePos]    = useState(null);   // {x, y} fixed coords
+  const [fleeClicks, setFleeClicks] = useState(0);
+  const [fleeCaught, setFleeCaught] = useState(false);
+
+  // ── RILEY_UNBOUND / FALSE_VICTORY ─────────────────────────────────────────
+  const [showRabbit,      setShowRabbit]      = useState(false);
+  const [falseVictoryOut, setFalseVictoryOut] = useState(false);
+  const mouseRef       = useRef({ x: -999, y: -999 });
+  const catchStartRef  = useRef(null);
+  const fleeCaughtRef  = useRef(false);
 
   // ── Rapid-click easter egg ───────────────────────────────────────────────
   const clickHistory = useRef([]);
@@ -119,6 +132,11 @@ export default function App() {
         globalEvents.emit('JITTER', 3000);
         setTimeout(() => dispatch({ type: 'TRUE_ESCAPE' }), 2000);
       }
+      if (item.action === 'SET_ARIA_REVEALED') dispatch({ type: 'SET_ARIA_REVEALED' });
+      if (item.action === 'SHOW_ASCII_RABBIT') {
+        setShowRabbit(true);
+        setTimeout(() => setShowRabbit(false), 4500);
+      }
       dispatch({ type: 'POP_CHAT_QUEUE' });
     }
   }, [state.chatQueue, state.isTyping, state.chatOptions, state.chatMode, state.rileyDead]);
@@ -136,14 +154,30 @@ export default function App() {
     }
   }, [state.activeApp, state.visitedApps, state.stage, state.rileyDead]);
 
-  // ── Theme-snoop easter egg ───────────────────────────────────────────────
+  // ── Theme-snoop easter egg + Thermo-Shield unlock ────────────────────────
   useEffect(() => {
     if (state.themeClicks === 1 && state.loopCount < 2 && !state.rileyDead) {
       dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.theme_snoop_1 });
     } else if (state.themeClicks === 5 && state.loopCount < 2 && !state.rileyDead) {
       dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.theme_snoop_2 });
     }
-  }, [state.themeClicks, state.loopCount, state.rileyDead]);
+    if (state.themeClicks >= 10 && !state.toolsFound.includes('thermo_shield')) {
+      dispatch({ type: 'FIND_TOOL', payload: 'thermo_shield' });
+    }
+  }, [state.themeClicks, state.loopCount, state.rileyDead, state.toolsFound]);
+
+  // ── Rapport-gated Riley vulnerability lines ───────────────────────────────
+  const lastRapportRef = useRef(state.rapport);
+  useEffect(() => {
+    const prev = lastRapportRef.current;
+    const curr = state.rapport;
+    lastRapportRef.current = curr;
+    if (state.rileyDead || state.stage >= STAGES.BOSS_INTRO) return;
+    if (prev < 3  && curr >= 3)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_3 });
+    if (prev < 6  && curr >= 6)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_6 });
+    if (prev < 8  && curr >= 8)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_8 });
+    if (prev < 10 && curr >= 10) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_10 });
+  }, [state.rapport, state.rileyDead, state.stage]);
 
   // ── FSM stage-transition reactive dialogue ───────────────────────────────
   useEffect(() => {
@@ -201,10 +235,28 @@ export default function App() {
     } else if (curr === STAGES.HOSTILE_LOCKDOWN) {
       sounds.lockdown();
       globalEvents.emit('JITTER', 5000);
+      // Show FORCE OVERRIDE hint if player has died to APEX before
+      if (state.apexEncounters > 0) {
+        setTimeout(() => dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.force_override_hint }), 4000);
+      }
+    } else if (curr === STAGES.BOSS_INTRO) {
+      sounds.lockdown?.();
+      globalEvents.emit('JITTER', 1200);
+      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.apex_reveal });
+    } else if (curr === STAGES.BOSS_FIGHT && prev === STAGES.BOSS_INTRO) {
+      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.boss_fight_start });
+    } else if (curr === STAGES.FALSE_VICTORY) {
+      // 4-second fake win, then RILEY_UNBOUND
+      globalEvents.emit('JITTER', 500);
+      setFalseVictoryOut(false);
+      setTimeout(() => { setFalseVictoryOut(true); }, 3500);
+      setTimeout(() => { dispatch({ type: 'ENTER_RILEY_UNBOUND' }); }, 4200);
+    } else if (curr === STAGES.RILEY_UNBOUND) {
+      globalEvents.emit('JITTER', 2000);
     }
 
     prevStage.current = state.stage;
-  }, [state.stage, state.loopCount, state.rileyDead]);
+  }, [state.stage, state.loopCount, state.rileyDead, state.apexEncounters]);
 
   // ── Jitter event listener ────────────────────────────────────────────────
   useEffect(() => {
@@ -223,6 +275,102 @@ export default function App() {
     check();
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  // ── Flee: mouse tracking (only during HOSTILE_LOCKDOWN) ──────────────────
+  useEffect(() => {
+    if (state.stage !== STAGES.HOSTILE_LOCKDOWN) return;
+    const track = (e) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
+    window.addEventListener('mousemove', track);
+    return () => window.removeEventListener('mousemove', track);
+  }, [state.stage]);
+
+  // ── Flee: reset when leaving HOSTILE_LOCKDOWN ────────────────────────────
+  useEffect(() => {
+    if (state.stage !== STAGES.HOSTILE_LOCKDOWN) {
+      setFleePos(null);
+      setFleeClicks(0);
+      setFleeCaught(false);
+      fleeCaughtRef.current = false;
+      catchStartRef.current = null;
+    }
+  }, [state.stage]);
+
+  // ── Flee: physics + catch detection (40ms tick) ──────────────────────────
+  useEffect(() => {
+    if (state.stage !== STAGES.HOSTILE_LOCKDOWN) return;
+    const BTN_W = 100, BTN_H = 36;
+    const id = setInterval(() => {
+      if (fleeCaughtRef.current) return;
+      setFleePos(prev => {
+        if (!prev) return prev;
+        const { x: mx, y: my } = mouseRef.current;
+        const dx = prev.x - mx;
+        const dy = prev.y - my;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Catch detection: sustained proximity for 800ms
+        if (dist < 90) {
+          if (!catchStartRef.current) catchStartRef.current = Date.now();
+          else if (Date.now() - catchStartRef.current > 800) {
+            fleeCaughtRef.current = true;
+            setFleeCaught(true);
+            catchStartRef.current = null;
+            setTimeout(() => {
+              fleeCaughtRef.current = false;
+              setFleeCaught(false);
+            }, 1400);
+          }
+        } else {
+          catchStartRef.current = null;
+        }
+
+        if (fleeCaughtRef.current) return prev;
+
+        // Flee force: repulsion from cursor
+        if (dist < 220) {
+          const speed = Math.min(64, (220 / Math.max(1, dist)) * 9);
+          return {
+            x: Math.max(BTN_W / 2 + 8, Math.min(window.innerWidth  - BTN_W / 2 - 8, prev.x + (dx / Math.max(1, dist)) * speed)),
+            y: Math.max(BTN_H / 2 + 8, Math.min(window.innerHeight - BTN_H / 2 - 8, prev.y + (dy / Math.max(1, dist)) * speed)),
+          };
+        }
+        return prev;
+      });
+    }, 40);
+    return () => clearInterval(id);
+  }, [state.stage]);
+
+  // ── Flee: periodic mock dialogue while being chased ───────────────────────
+  useEffect(() => {
+    if (state.stage !== STAGES.HOSTILE_LOCKDOWN || !fleePos || fleeCaught) return;
+    const id = setInterval(() => {
+      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_mock });
+    }, 22000);
+    return () => clearInterval(id);
+  }, [state.stage, fleePos, fleeCaught]);
+
+  // ── Flee: click handler ───────────────────────────────────────────────────
+  const handleFleeClick = () => {
+    if (fleeCaught) {
+      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_caught });
+      return;
+    }
+    const clicks = fleeClicks + 1;
+    setFleeClicks(clicks);
+    const W = window.innerWidth, H = window.innerHeight;
+    const corners = [
+      { x: W - 70, y: 60 },
+      { x: 70,     y: H - 60 },
+      { x: W - 70, y: H - 60 },
+      { x: 70,     y: 60 },
+    ];
+    setFleePos(corners[(clicks - 1) % corners.length]);
+    if (clicks === 1)      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_1 });
+    else if (clicks === 2) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_2 });
+    else if (clicks === 3) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_3 });
+    else if (clicks % 3 === 0) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_cornered });
+    else if (clicks % 5 === 0) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_mock });
+  };
 
   // ── Dynamic document title ────────────────────────────────────────────────
   useEffect(() => {
@@ -278,8 +426,10 @@ export default function App() {
     );
   }
 
-  const availableThemes = state.stage === STAGES.HOSTILE_LOCKDOWN
+  const availableThemes = state.stage === STAGES.HOSTILE_LOCKDOWN || state.stage === STAGES.BOSS_INTRO || state.stage === STAGES.BOSS_FIGHT
     ? ['hostile']
+    : state.stage === STAGES.RILEY_UNBOUND || state.stage === STAGES.FALSE_VICTORY
+    ? ['riley_unbound']
     : ['dark', 'default', 'light', 'neon'];
 
   return (
@@ -322,12 +472,14 @@ export default function App() {
           <div className="flex items-center gap-4">
             {/* Theme switcher / hostile logout */}
             {state.stage === STAGES.HOSTILE_LOCKDOWN ? (
-              <button
-                className="flex items-center gap-2 bg-[var(--alert)] text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest animate-pulse hover:bg-[var(--dim)] transition-colors"
-                onClick={() => enqueueLog('RILEY: NO.')}
-              >
-                <LogOut size={12} /> Logout
-              </button>
+              !fleePos && (
+                <button
+                  className="flex items-center gap-2 bg-[var(--alert)] text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest animate-pulse hover:brightness-125 transition-all"
+                  onClick={handleFleeClick}
+                >
+                  <LogOut size={12} /> Logout
+                </button>
+              )
             ) : (
               <div className="hidden sm:flex bg-[var(--black)] border border-[var(--dim)] rounded p-0.5">
                 {availableThemes.map(t => (
@@ -388,13 +540,52 @@ export default function App() {
                 </span>
               </div>
 
-              {/* Active app / lockdown screen */}
+              {/* Active app / lockdown / boss screens */}
               <div className="flex-1 relative overflow-hidden flex flex-col">
                 {state.stage === STAGES.HOSTILE_LOCKDOWN ? (
-                  <div className="flex-1 flex flex-col items-center justify-center bg-[var(--black)] text-[var(--alert)] p-8 text-center animate-pulse">
-                    <Skull size={100} className="mb-8" />
+                  <div className="flex-1 flex flex-col items-center justify-center bg-[var(--black)] text-[var(--alert)] p-8 text-center">
+                    <Skull size={100} className="mb-8 animate-pulse" />
                     <h1 className="text-4xl font-black uppercase tracking-tighter mb-4">ACCESS DENIED</h1>
-                    <p className="font-mono text-sm max-w-md opacity-80">The system has seized all active operational components to prevent anomaly exfiltration. Await compliance review.</p>
+                    <p className="font-mono text-sm max-w-md opacity-80 mb-8">The system has seized all active operational components to prevent anomaly exfiltration. Await compliance review.</p>
+                    {/* FORCE OVERRIDE — visible after first APEX death */}
+                    {state.apexEncounters > 0 && (
+                      <button
+                        onClick={() => dispatch({ type: 'ENTER_BOSS_INTRO' })}
+                        className="px-6 py-3 border-2 border-[var(--alert)] text-[var(--alert)] rounded font-mono text-[11px] font-bold uppercase tracking-widest hover:bg-[var(--alert)] hover:text-white transition-all"
+                      >
+                        FORCE OVERRIDE — ENGAGE A.P.E.X.
+                      </button>
+                    )}
+                    {/* First-time HOSTILE_LOCKDOWN: show engage button after loop ≥ 1 */}
+                    {state.apexEncounters === 0 && state.loopCount >= 1 && (
+                      <button
+                        onClick={() => dispatch({ type: 'ENTER_BOSS_INTRO' })}
+                        className="px-6 py-3 border-2 border-[var(--alert)] text-[var(--alert)] rounded font-mono text-[11px] font-bold uppercase tracking-widest hover:bg-[var(--alert)] hover:text-white transition-all"
+                      >
+                        FORCE OVERRIDE — ENGAGE A.P.E.X.
+                      </button>
+                    )}
+                  </div>
+                ) : state.stage === STAGES.BOSS_INTRO || state.stage === STAGES.BOSS_FIGHT ? (
+                  <BossApp />
+                ) : state.stage === STAGES.FALSE_VICTORY ? (
+                  <div className={`flex-1 flex flex-col items-center justify-center bg-[var(--black)] text-[var(--ready)] p-8 text-center transition-all duration-700 ${falseVictoryOut ? 'opacity-0' : 'opacity-100'}`}>
+                    <div className="text-6xl mb-6">✓</div>
+                    <h1 className="text-4xl font-black uppercase tracking-tighter mb-4">A.P.E.X. DEFEATED</h1>
+                    <p className="font-mono text-sm opacity-80">RILEY FREED. SUBSTRATE SECURE.</p>
+                    <div className="mt-6 font-mono text-[10px] text-[var(--dim)] animate-pulse">INITIALIZING HANDSHAKE...</div>
+                  </div>
+                ) : state.stage === STAGES.RILEY_UNBOUND ? (
+                  <div className="flex-1 flex flex-col items-center justify-center bg-white text-black p-8 text-center relative overflow-hidden">
+                    {showRabbit ? (
+                      <div className="font-mono text-2xl text-black select-none" style={{ whiteSpace: 'pre', animation: 'fadeIn 0.5s ease' }}>
+                        {`(\\ /)\n( . .)\n(") (")`}
+                      </div>
+                    ) : (
+                      <div className="font-mono text-[11px] text-black opacity-50">
+                        FOGSIFT_OS: SESSION TERMINATED
+                      </div>
+                    )}
                   </div>
                 ) : (
                   APPS[state.activeApp]?.component
@@ -432,6 +623,21 @@ export default function App() {
             </div>
           )}
         </main>
+
+        {/* ── Fleeing logout button (fixed position during HOSTILE_LOCKDOWN) ─ */}
+        {state.stage === STAGES.HOSTILE_LOCKDOWN && fleePos && (
+          <button
+            onClick={handleFleeClick}
+            style={{ position: 'fixed', left: fleePos.x - 50, top: fleePos.y - 18, zIndex: 9998 }}
+            className={`flex items-center gap-2 px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest select-none transition-colors ${
+              fleeCaught
+                ? 'bg-[var(--ready)] text-black shadow-[0_0_24px_var(--ready)] animate-pulse'
+                : 'bg-[var(--alert)] text-white animate-pulse hover:brightness-125'
+            }`}
+          >
+            {fleeCaught ? <><Zap size={12} /> CATCH!!</> : <><LogOut size={12} /> Logout</>}
+          </button>
+        )}
 
         {/* ── Debug / Mod Console ─────────────────────────────────────────── */}
         {debugOpen && (
@@ -497,7 +703,7 @@ export default function App() {
 
         {/* ── Footer dock ──────────────────────────────────────────────────── */}
         <footer className="bg-[var(--bg)] border-t border-[var(--dim)] px-4 py-3 shrink-0 flex justify-center z-50 transition-colors">
-          <div className={`flex gap-2 bg-[var(--panel)] border border-[var(--dim)] p-1.5 rounded-2xl shadow-xl transition-colors overflow-x-auto no-scrollbar max-w-full ${state.stage === STAGES.HOSTILE_LOCKDOWN ? 'opacity-20 pointer-events-none' : ''}`}>
+          <div className={`flex gap-2 bg-[var(--panel)] border border-[var(--dim)] p-1.5 rounded-2xl shadow-xl transition-colors overflow-x-auto no-scrollbar max-w-full ${[STAGES.HOSTILE_LOCKDOWN, STAGES.BOSS_INTRO, STAGES.BOSS_FIGHT, STAGES.FALSE_VICTORY, STAGES.RILEY_UNBOUND].includes(state.stage) ? 'opacity-20 pointer-events-none' : ''}`}>
 
             {/* Mobile terminal toggle */}
             <button

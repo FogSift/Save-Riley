@@ -1,37 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Box, Globe, Activity, Radio, Terminal, Radar, AlertTriangle, Skull } from 'lucide-react';
+import { Box, Globe, Activity, Radio, Radar, AlertTriangle, Skull } from 'lucide-react';
 import { STAGES } from '../../constants/stages';
 import { DIALOGUE_TREE } from '../../constants/dialogue';
 import { useOS } from '../../context/OSContext';
+import SubstrateSimulation from './SubstrateSimulation';
 
-function LiveDataStream({ speed, isOptimal }) {
-  const [stream, setStream] = useState([]);
-
-  useEffect(() => {
-    if (speed === 0 || !isOptimal) return;
-    const interval = setInterval(() => {
-      const hash = Math.random().toString(16).substring(2, 8).toUpperCase();
-      const temp = (Math.random() * 20 + 20).toFixed(1);
-      const hex = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
-      const entry = `[SYS.TICK] PKT_${hash} :: { TEMP: ${temp}C, COLOR: '${hex}', PARITY: OK }`;
-      setStream(prev => [entry, ...prev].slice(0, 12));
-    }, Math.max(100, 2000 / speed));
-    return () => clearInterval(interval);
-  }, [speed, isOptimal]);
-
-  if (!isOptimal) return <div className="text-[var(--alert)] animate-pulse p-4 font-mono text-sm">STREAM OFFLINE. FIX BACKEND LOGIC.</div>;
-  if (speed === 0) return <div className="text-[var(--dim)] p-4 font-mono text-sm">STREAM READY. AWAITING ROUTER THROUGHPUT.</div>;
-
-  return (
-    <div className="flex flex-col gap-1 w-full relative z-10 p-4">
-      {stream.map((item, i) => (
-        <div key={i} className="text-[var(--ready)] font-mono text-[10px] sm:text-xs whitespace-nowrap" style={{ opacity: 1 - i * 0.08 }}>
-          {item}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export default function FrontendApp() {
   const { state, dispatch } = useOS();
@@ -140,19 +112,8 @@ export default function FrontendApp() {
           </div>
         </div>
 
-        <div className="col-span-2 md:col-span-3 bg-[var(--black)] border border-[var(--dim)] rounded-xl flex flex-col shadow-[var(--shadow-os-window)] overflow-hidden relative min-h-[200px]">
-          <div className="absolute inset-0 scanline opacity-10 pointer-events-none" />
-          <div className="p-4 border-b border-[var(--dim)] shrink-0 flex justify-between items-center relative z-10 bg-[var(--panel)]">
-            <span className="text-[10px] uppercase font-bold text-[var(--dim)] tracking-widest flex items-center gap-2">
-              <Terminal size={12} /> Incoming Stream
-            </span>
-            <span className="text-[var(--accent)] animate-pulse flex items-center gap-1 text-[10px] font-bold">
-              <div className="w-2 h-2 rounded-full bg-[var(--accent)]" /> REC
-            </span>
-          </div>
-          <div className="flex-1 overflow-hidden relative z-10 flex flex-col justify-end">
-            <LiveDataStream speed={state.routingAutoRate} isOptimal={isOptimal} />
-          </div>
+        <div className="col-span-2 md:col-span-3 bg-[var(--black)] border border-[var(--dim)] rounded-xl flex flex-col shadow-[var(--shadow-os-window)] overflow-hidden relative" style={{ minHeight: 340 }}>
+          <SubstrateSimulation />
         </div>
       </div>
     </div>
