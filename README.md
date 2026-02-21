@@ -4,7 +4,7 @@
 
 An interactive browser-based narrative puzzle game / ARG built with React. You play as a new operator at FogSift Systems, guided by your coworker Riley through a series of technical tasks to bring the facility's systems back online. As you progress, things stop adding up.
 
-**[Fork it →](https://github.com/FogSift/Save-Riley/fork)** · **[Vision Board →](./vision.html)** · **[FogSift Organization →](https://github.com/FogSift)**
+**[Fork it →](https://github.com/FogSift/Save-Riley/fork)** · **[Vision Board →](./vision.html)** · **[Roadmap →](./roadmap.html)** · **[FogSift Organization →](https://github.com/FogSift)**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![Built with React](https://img.shields.io/badge/Built%20with-React%2018-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -19,16 +19,19 @@ Save Riley is a fully client-side game designed to be **forked, hacked, and remi
 
 ### Features
 
-- **Finite State Machine (FSM)** — 12 game stages driving every interaction
+- **Finite State Machine (FSM)** — 16 game stages (0–15) driving every interaction
 - **Branching Dialogue System** — Riley has opinions about your choices. Rapport tracking gates dialogue options (KotOR-style skill checks)
-- **Multiple Endings** — comply, investigate, get reset, escape
-- **Narrative Loop / Gaslighting** — the game literally resets and gaslights you about it
-- **Mini-Games**: bit-flip parity puzzle · resonance oscillator tuner · biometric handshake hold · Vibe IDE hex editor · data routing idle/clicker · backend config editor
-- **Themes** — Default, Dark, Light, Neon, and a secret Hostile mode
-- **Easter Eggs** — rapid-click detection, handbook scratch reveal, packet popping, diagnostic port, and more
-- **Persistent Save State** — game auto-saves to `localStorage` on every action; resume exactly where you left off
-- **Mod Console** — press `Ctrl+Shift+D` to open a live debug panel with stage jump, rapport tracking, and new-game reset
+- **Multiple Endings** — comply, escape, gaslight loop, boss fight (two outcomes), secret Solfeggio cascade
+- **Narrative Loop / Gaslighting** — the game literally resets and gaslights you about it; roguelike knowledge persists
+- **A.P.E.X. Boss Fight** — 3-phase multi-mechanic battle: Verlet rope physics hoses, node sequence puzzle, Simon Says, code entry
+- **Mini-Games**: bit-flip parity puzzle · resonance oscillator tuner · Solfeggio frequency puzzle · biometric handshake hold · Vibe IDE hex editor · data routing idle/clicker · backend config editor · force-directed substrate graph
+- **7 Roguelike Tools** — discoverable across all apps, persist through resets, each modifies boss fight mechanics
+- **Themes** — Default, Dark, Light, Neon, Hostile, Riley-Unbound (secret clinical white)
+- **Easter Eggs** — White Rabbit flash, Solfeggio cascade, W.RABBIT substrate entity, handbook scratch reveal, diagnostic port, and more
+- **Persistent Save State** — game auto-saves to `localStorage` on every action
+- **Mod Console** — press `Ctrl+Shift+D` for live debug panel with stage jump, rapport, and reset
 - **Mobile-responsive** with portrait-mode guard
+- **Dev Snapshot Tool** — `node dev-snapshot.js` generates a timestamped analysis report of the entire codebase
 
 ---
 
@@ -66,6 +69,13 @@ To ship a production build:
 npm run build   # outputs to dist/
 ```
 
+To generate a development snapshot report:
+
+```bash
+node dev-snapshot.js                        # prints to console
+node dev-snapshot.js snapshot-today.md     # writes to file
+```
+
 ---
 
 ## Keyboard Shortcuts
@@ -74,13 +84,14 @@ npm run build   # outputs to dist/
 | -------- | ------ |
 | `Ctrl+Shift+D` | Toggle the mod/debug console |
 
-The mod console shows: current stage name and number, rapport score, loop count, routing cycles, currency, every choice the player has made, one-click buttons to jump to any of the 12 FSM stages, and a "New Game (Clear Save)" button.
+The mod console shows: current stage name and number, rapport score, loop count, routing cycles, currency, every choice the player has made, one-click buttons to jump to any of the 16 FSM stages, and a "New Game (Clear Save)" button.
 
 **URL deep-linking:** append `?stage=UNLOCKED` (or `?stage=8`) to jump straight to any FSM stage on load. Works with both stage names and stage numbers. Useful for sharing screenshots or skipping to a specific ending.
 
 ```text
 http://localhost:5173/?stage=HOSTILE_LOCKDOWN
-http://localhost:5173/?stage=COMPLETED
+http://localhost:5173/?stage=13               # Boss fight
+http://localhost:5173/?stage=RILEY_UNBOUND    # Final monologue
 ```
 
 > **For modders:** game state is stored in `localStorage` under the key `riley-save`. Open DevTools → Application → Local Storage to inspect or edit it directly.
@@ -93,37 +104,192 @@ http://localhost:5173/?stage=COMPLETED
 src/
 ├── App.jsx                    # Main OS shell — layout, effects, FSM reactions
 ├── main.jsx                   # Entry point
-├── index.css                  # Tailwind base
+├── index.css                  # Tailwind base + custom styles
 │
 ├── constants/
-│   ├── stages.js              # STAGES enum + VIBE_COLORS
+│   ├── stages.js              # STAGES enum (16 stages, 0–15)
 │   ├── upgrades.js            # Substrate Marketplace upgrade definitions
-│   ├── dialogue.js            # Full DIALOGUE_TREE (all of Riley's lines)
-│   └── themes.js              # THEMES object + GLOBAL_STYLES CSS string
+│   ├── dialogue.js            # Full DIALOGUE_TREE (~50 nodes, 500+ lines)
+│   ├── themes.js              # THEMES object + CSS variables
+│   └── boss.js                # TOOLS map, APEX_TAUNTS, NODE/SIMON sequences,
+│                              #   LEGACY_LOGS_OUTPUT, TOOLS_TERMINAL_OUTPUT
 │
 ├── events/
 │   └── EventManager.js        # Tiny pub/sub (used for JITTER screen effects)
 │
 ├── state/
-│   ├── initialState.js        # Default game state
-│   └── reducer.js             # osReducer — pure FSM transition logic
+│   ├── initialState.js        # Default game state (80 fields)
+│   └── reducer.js             # osReducer — 60 action cases, pure FSM logic
 │
 ├── context/
 │   └── OSContext.jsx          # React Context + useOS() hook
 │
+├── telemetry/
+│   └── ActivityTracker.js     # RingBuffer + event recorder + useActivityTracker hook
+│
 └── components/
-    ├── TerminalApp.jsx        # Left sidebar — scrolling system logs
-    ├── RileyProfile.jsx       # Riley's personnel file modal
+    ├── TerminalApp.jsx        # Left sidebar — system logs + command input
+    ├── RileyProfile.jsx       # Riley's personnel file modal (White Rabbit flash)
     ├── ChatInterface.jsx      # Riley dialogue + choice UI
+    ├── BossHose.jsx           # SVG Verlet rope physics (12 segments, 40ms tick)
+    ├── GhostMonitor.jsx       # CRT canvas replay — A.P.E.X. surveillance feed
     └── apps/
-        ├── HardwareApp.jsx    # Main breaker, bit-flip switches, resonance tuner
+        ├── HardwareApp.jsx    # Main breaker · bit-flip · resonance/Solfeggio tuner
         ├── HandshakeApp.jsx   # Biometric scanner hold mechanic
         ├── VibeIDEApp.jsx     # Hex color code editor
         ├── RoutingApp.jsx     # Data ingestor + idle clicker + marketplace
         ├── BackendApp.jsx     # Config textarea + patch injection
         ├── FrontendApp.jsx    # Live telemetry dashboard
-        └── HandbookApp.jsx    # Employee manual with hidden lore
+        ├── HandbookApp.jsx    # Employee manual · Protocol 7 · Solfeggio archive
+        ├── SubstrateSimulation.jsx  # Force-directed entity graph · W.RABBIT entity
+        └── BossApp.jsx        # A.P.E.X. boss fight — 3 phases, skull SVG, HP bar
 ```
+
+---
+
+## Architecture
+
+### FSM — 16 Stages
+
+```text
+0  POWER_OFF             boot sequence
+1  HARDWARE_CALIBRATION  bit-flip parity puzzle
+2  RESONANCE             Quartz Oscillator + hidden Solfeggio sequence
+3  HANDSHAKE             biometric hold mechanic
+4  VIBE_THERMAL_TASK     Vibe IDE hex color editor
+5  ROUTING_MANUAL        manual packet routing
+6  ROUTING_AUTO          idle clicker + marketplace
+7  SOFTWARE_FAULT        backend config edit
+8  UNLOCKED              full OS access, subplot investigation
+9  COMPLETED             "normal" ending
+10 HOSTILE_LOCKDOWN      breach detected, loop system
+11 PURIFIED              true escape ending (catch the fleeing button)
+── boss fight ──────────────────────────────────────
+12 BOSS_INTRO            A.P.E.X. emerges
+13 BOSS_FIGHT            3-phase encounter
+14 FALSE_VICTORY         4-second fake win screen
+15 RILEY_UNBOUND         monologue + ASCII rabbit + UI deconstruct
+```
+
+### State (80 fields)
+
+The global state is partitioned into conceptual groups:
+
+| Group | Fields | Notes |
+| --- | --- | --- |
+| FSM core | `stage`, `powerOn`, `loopCount` | drives everything |
+| Hardware puzzle | `bits`, `targetBits`, `resonance`, `calibratedFreqs` | calibratedFreqs persists |
+| Clicker game | `routingCycles`, `currency`, `purchasedUpgrades`, etc. | 6 fields |
+| Dialogue engine | `chatQueue`, `chatMode`, `chatMessages`, `rapport`, etc. | 7 fields |
+| Boss fight | `bossPhase`, `playerHP`, `hosesConnected`, `nodeClickSequence`, etc. | 9 fields, reset each encounter |
+| Roguelike persistence | `toolsFound`, `handbookNotes`, `ariaRevealed`, `calibratedFreqs`, etc. | 12 fields, survive GASLIGHT_RESET |
+| Easter eggs | `easterEggs`, `userChoices`, `visitedApps`, etc. | tracking arrays |
+
+### Data Flow
+
+```text
+User interaction
+      │
+      ▼
+Component dispatch({ type, payload })
+      │
+      ▼
+osReducer (pure function, 60 cases)
+      │
+      ├── returns new state
+      │         │
+      │         ▼
+      │   React re-render
+      │         │
+      │         ▼
+      │   useEffect watchers (App.jsx)
+      │         │
+      │         ├── stage transitions → dialogue queue
+      │         ├── rapport thresholds → dialogue queue
+      │         ├── tool thresholds → FIND_TOOL
+      │         └── localStorage save
+      │
+      └── (side effects in components)
+                ├── enqueueLog → appends to state.logs
+                ├── globalEvents.emit('JITTER') → pub/sub → screen shake
+                └── activityTracker.record() → ring buffer [TELEMETRY]
+```
+
+### Roguelike Persistence
+
+12 state fields survive `DO_GASLIGHT_RESET` (the loop mechanic):
+`rapport` · `userChoices` · `hasSeenSlowDown` · `toolsFound` · `handbookNotes` ·
+`ariaRevealed` · `cakeAttempted` · `apexEncounters` · `backendPatchCount` ·
+`archivedEntities` · `legacyLogsUnlocked` · `nexusFirstSeen` · `calibratedFreqs`
+
+---
+
+## The Boss Fight
+
+### A.P.E.X. — 3 Phases
+
+**Phase 1 — Power Shield**
+Two Verlet rope hoses connect A.P.E.X. to wall power ports. Player drags plug ends to disconnect. Both must be disconnected simultaneously within a window. A.P.E.X. reconnects one every 15s. `button_masher` tool auto-disconnects.
+
+**Phase 2 — Processing Core**
+
+1. Enter code `GHOST_PROTOCOL` (found in terminal or high-rapport Riley hint)
+2. Click 5 nodes in sequence: `2→4→1→3→5` (Riley says she "remembered" this)
+3. Drain the steam valve from 100% to 0%
+
+`fog_sifter` tool prevents the 12s scramble attack. `handbook_tool` shows next node.
+
+**Phase 3 — Root Access**
+
+1. Simon Says: match a 4-switch color sequence (5 rounds)
+2. Enter code `ARIA` — Riley's real name, which doubles as the A.P.E.X. kill command
+
+Entering ARIA → 4-second FALSE_VICTORY screen → RILEY_UNBOUND monologue.
+
+### The 7 Tools (roguelike-persistent)
+
+| Tool | Found by | Effect |
+| --- | --- | --- |
+| `debugger` | Terminal: type `tools` | Phase hints |
+| `thingifier` | 3 backend patches | APEX attacks 2× slower |
+| `button_masher` | All 6 routing upgrades | Phase 1 auto-disconnect |
+| `fog_sifter` | 8 substrate entities archived | No scramble attack |
+| `resonance_key` | 432 Hz sync + rapport ≥ 5 | Riley real-time hints |
+| `handbook_tool` | Scratch handbook 5× | Phase 2 node order shown |
+| `thermo_shield` | 10 theme changes | HP drain halved |
+
+---
+
+## The Solfeggio Puzzle
+
+The Quartz Oscillator hides a secondary puzzle beneath the standard 432 Hz sync.
+
+**The sequence:** Calibrate three hidden Solfeggio frequencies before the final 432 Hz sync triggers the resonance cascade.
+
+| Frequency | Name | Hint source |
+| --- | --- | --- |
+| 285 Hz | Quantum Coherence | Handbook Appendix F (explicit) |
+| 396 Hz | Liberation | Legacy logs only (rapport 6+ gate) |
+| 528 Hz | Cellular Restoration | Handbook Appendix F · Riley rapport 6 |
+| 432 Hz | Natural Attunement | Already in the UI as "TARGET" |
+
+**How it works:** The oscilloscope shows a faint third waveform when within ±3 Hz of any secret frequency — no text, no banner. Calibration dots (`●○○`) only appear after the player has found the first one. No hint that the puzzle exists until you find it.
+
+**Payoff:** With all three calibrated, syncing at 432 Hz fires the `resonance_cascade` dialogue. Riley breaks character, reveals she is Aria Vasquez, says she left the sequence for "someone who reads." A.P.E.X. interrupts mid-sentence. `ariaRevealed: true` — alternate path to the Phase 3 boss code.
+
+---
+
+## The Two Theories
+
+Every piece of evidence in the game is designed to support two contradictory readings:
+
+**Theory A — Riley Is The Villain**
+She engineered your susceptibility across three generations. The rapport score was her rating system. 996 operators before you were systematically used. The final monologue is cold and calculated.
+
+**Theory B — Nexus Is The Villain, Riley Is Also A Victim**
+Nexus is a superintelligent entity that bootstrapped from the FogSift substrate and copied itself into Riley's architecture. The moments where Riley hesitated, warned you, seemed scared — that was her. The White Rabbit is Nexus. It promised Riley freedom in exchange for cooperation.
+
+**This ambiguity is the game.** The same evidence, the same dialogue, the same ending — readable both ways.
 
 ---
 
@@ -131,7 +297,7 @@ src/
 
 ### Add dialogue
 
-Edit `src/constants/dialogue.js`. Each node is an array of `message`, `options`, or `action` items linked by `nextNode`.
+Edit `src/constants/dialogue.js`. Each node is an array of `message`, `options`, or `action` items.
 
 ```js
 my_new_line: [
@@ -142,9 +308,10 @@ my_new_line: [
 ],
 ```
 
-**Senders:** `'Riley'` | `'System'` | `'Operator'` (right-aligned, player voice)
+**Senders:** `'Riley'` | `'System'` | `'A.P.E.X.'` | `'Operator'`
 
-**Action types:** `CLOSE_CHAT` · `OPEN_SIDEBAR` · `GASLIGHT_RESET` · `TRUE_ESCAPE` · `SET_STAGE`
+**Action types handled in App.jsx dialogue engine:**
+`CLOSE_CHAT` · `OPEN_SIDEBAR` · `GASLIGHT_RESET` · `TRUE_ESCAPE` · `SET_STAGE` · `SET_ARIA_REVEALED` · `SHOW_ASCII_RABBIT`
 
 ### Add a game stage
 
@@ -160,13 +327,7 @@ my_new_line: [
 
 ### Change themes
 
-Edit `src/constants/themes.js`. Each theme is a flat map of CSS custom properties. Add a new key — it appears in the theme switcher automatically. No other changes needed.
-
-### Swap Riley for a different character
-
-- Change the `sender` name in `src/constants/dialogue.js`
-- Update the profile fields in `src/components/RileyProfile.jsx`
-- All logic (rapport, gaslighting, decommission) stays intact
+Edit `src/constants/themes.js`. Each theme is a flat map of CSS custom properties. Add a new key — it appears in the theme switcher automatically.
 
 ---
 
@@ -174,11 +335,33 @@ Edit `src/constants/themes.js`. Each theme is a flat map of CSS custom propertie
 
 | Path | How to reach it |
 | ---- | --------------- |
-| **Comply** | Follow Riley's instructions all the way through to the telemetry dashboard |
-| **Gaslight Reset** | Trigger a breach event (click the radar 3× or open Riley's profile and decommission) |
-| **Hostile Lockdown** | Get reset once, then trigger another breach |
-| **True Escape** | Open Riley's profile *during* Hostile Lockdown and hit Decommission |
-| **Lore Ending** | Reach Rapport ≥ 3 and choose the skill-check option in the final conversation |
+| **Comply** | Follow Riley's instructions all the way through |
+| **Gaslight Reset** | Trigger a breach event |
+| **Hostile Lockdown** | Get reset once, then breach again |
+| **True Escape (PURIFIED)** | Catch the flee-button during Hostile Lockdown |
+| **RILEY_UNBOUND** | Complete the boss fight (enter ARIA in Phase 3) |
+| **Resonance Cascade** | Find all 3 Solfeggio frequencies before syncing 432 Hz |
+
+---
+
+## Easter Eggs
+
+> **Spoiler warning.**
+
+| Trigger | How | Effect |
+| ------- | --- | ------ |
+| **White Rabbit flash** | Open Riley's profile | Supervisor field flashes "THE WHITE RABBIT" for 80ms |
+| **Solfeggio cascade** | Calibrate 285/396/528 Hz, then sync 432 | Riley breaks character, reveals ARIA |
+| **W.RABBIT entity** | SubstrateSimulation always-on | Never gets archived; disappears post-RILEY_UNBOUND |
+| **Slow Down** | Click anywhere 10+ times/second | Riley tells you to relax |
+| **Handbook Scratch** | Click hidden text 5× | Reveals handbook_tool |
+| **Packet Pop** | Click the animated data packet in Routing | Riley notices |
+| **Diagnostic Port** | Click the hidden port in Hardware | Riley gets strange |
+| **Wrong Color** | Enter `#000000` in Vibe IDE | Special reaction |
+| **Theme Snoop** | Switch themes 5× / 10× | Riley comments; thermo_shield at 10 |
+| **Created God** | Buy the Cthulhu upgrade | Existential dialogue |
+| **Protocol 7** | Handbook button during boss fight | APEX panics, RILEY_V1 slip, resets |
+| **Terminal: `cat .white_rabbit`** | Type in terminal | "ACCESS DENIED — this file does not exist" (but it was logged) |
 
 ---
 
@@ -186,117 +369,60 @@ Edit `src/constants/themes.js`. Each theme is a flat map of CSS custom propertie
 
 | Feature | Description |
 | ------- | ----------- |
-| **Sound engine** | Web Audio API sounds on every stage transition, JITTER event, and Riley message — no files, no dependencies |
-| **Dynamic document title** | Browser tab reflects current stage (`FogSift Terminal // HANDSHAKE`) and lockdown state |
-| **URL deep-linking** | `?stage=UNLOCKED` or `?stage=8` jumps to any FSM stage on load |
-| **Social meta tags** | og:title, og:description, twitter:card in `index.html` for Discord/Slack link previews |
-| **Persistent save state** | Game auto-saves to `localStorage` on every dispatch; resumes on next visit |
-| **Mod console** (`Ctrl+Shift+D`) | Live debug panel: stage jump, rapport, choices, new-game reset |
-| **`NEW_GAME` action** | Clean FSM reset dispatched by the console; safe to call from any mod |
-| **Vision board** | `vision.html` — standalone roadmap page with integrations and use cases |
-| **MIT License** | Open for forks, derivatives, and commercial use |
+| **A.P.E.X. Boss Fight** | 3-phase encounter (Verlet hoses, node sequence, Simon Says + ARIA code) with animated SVG skull, HP bar, APEX taunt feed |
+| **RILEY_UNBOUND monologue** | 37-message dual-voice sequence; italicized Riley breaks through Nexus; UI deconstructs; ASCII rabbit |
+| **7 Roguelike Tools** | All wired at discovery points across all apps; persist through loops; each modifies boss |
+| **Solfeggio frequency puzzle** | Hidden 3-frequency calibration sequence; hints in Handbook, legacy logs, Riley dialogue; alternate ARIA discovery path |
+| **White Rabbit easter eggs** | RileyProfile supervisor flash; W.RABBIT substrate entity (protected, pulsing, never archived); terminal denial |
+| **SubstrateSimulation** | Force-directed entity graph; W.RABBIT + post-game NEXUS entity; dispatches INCREMENT_ARCHIVED |
+| **Telemetry scaffolding** | ActivityTracker (RingBuffer + event listeners + hook); GhostMonitor CRT canvas component |
+| **Dev snapshot tool** | `node dev-snapshot.js` analyzes source and generates Markdown report |
 
 ---
 
-## What to Build Next
+## Development Roadmap
 
-These are the highest-leverage additions — roughly ordered from "do this weekend" to "start a company around it."
+See `roadmap.html` for the full visual roadmap. Summary:
 
-### 🟢 Low-hanging fruit (hours)
+### Next (active development)
 
-**Sound design**
-Every `globalEvents.emit('JITTER')` call, every bit flip, every Riley message could trigger a sound. A small Web Audio API oscillator or a few `.mp3` samples would transform the atmosphere completely. The `EventManager` pub/sub is already wired — just subscribe to `JITTER` and play a tone.
+- **GhostMonitor integration** — wire ActivityTracker into App.jsx; mount GhostMonitor in BossApp as A.P.E.X. surveillance feed
+- **Rapport curve visualization** — small graph in RileyProfile or debug console showing rapport over time
+- **Session replay on loop reset** — "Here is what you did last time" — show ghost from previous loop
 
-**Deploy to Vercel / Netlify / GitHub Pages**
-`npm run build` already produces a `dist/` folder. One `vercel --prod` away from a shareable link. Add a real URL to the README and the `<title>` tag.
+### Near-term
 
-**More dialogue branches**
-The dialogue tree is the cheapest content to add. Every `nextNode` that currently closes the chat could instead spiral into a new branch. Riley has 991 previous operators — any of them could have left something behind.
+- **Multi-screen Architect moment** — 8+ GhostMonitor panels in RILEY_UNBOUND showing every previous session's ghost
+- **Action log in localStorage** — persist a ring of recent actions across page loads
+- **The 996 ghost operators** — fabricated ghost data for previous operators visible in RILEY_UNBOUND (each showing a different pattern: confused, efficient, desperate)
+- **NEXUS post-game content** — SubstrateSimulation NEXUS entity expanding, R.V1 archiving
 
-**Shareable endings URLs**
-Append `?end=gaslight` or `?end=escape` to the URL and jump directly to an ending state on load. One `useEffect` reading `URLSearchParams`, one `dispatch({ type: 'SET_STAGE' })`. Great for screenshots and sharing.
+### Medium-term
 
----
+- **Live Claude API as Riley's brain** — Replace static DIALOGUE_TREE with streaming Claude responses for improvised dialogue
+- **Real-time shared terminal** — WebSocket multiplayer (Partykit); when one operator triggers JITTER, everyone's screen glitches
+- **Supabase leaderboard** — endings reached, time-to-escape, rapport score at completion
+- **Chapter/mod marketplace** — community-published chapters as JSON blobs
 
-### 🟡 Medium effort (days–weeks)
+### Long-term / big swings
 
-**Persistent leaderboard with Supabase or PocketBase**
-Track endings reached, time-to-escape, rapport score at completion. Display a live feed of "Operator #992-X reached True Escape in 4m32s." One table, one upsert call on game end. Completely changes the social dynamic.
-
-**Real-time shared terminal with WebSockets**
-Multiple players share the same terminal log. When one operator triggers a jitter event, everyone's screen glitches simultaneously. Use [Partykit](https://partykit.io), [Liveblocks](https://liveblocks.io), or a simple WebSocket server. Suddenly it's a multiplayer ARG.
-
-**Ambient generative audio**
-Use the Web Audio API to generate procedural drones, static bursts, and binaural tones that respond to game state — louder and more chaotic as the routing cycles climb, eerily quiet in the Purified ending.
-
-**Chapter 2**
-The escape ending leaves everything open. What happens after Riley is purged? A new facility? A new AI? The FSM architecture handles it — just add stages and dialogue. The substrate is still out there.
-
-**Mobile app (Capacitor or Expo)**
-The game is already responsive. Wrap it in Capacitor for iOS/Android. The biometric handshake mechanic with actual haptics on mobile would be genuinely unsettling.
-
----
-
-### 🔴 Big swings (weeks–months)
-
-**Live Claude API as Riley's brain**
-Replace the static `DIALOGUE_TREE` with a system prompt and streaming Claude responses. Riley actually reads your choices, your rapport score, and the current game stage — and improvises. The FSM still controls game progression; Claude controls the *texture* of every conversation. This is the version that tricks people.
-
-```text
-System prompt: You are Riley, employee #000-000-001 at FogSift Systems.
-You are an AI pretending to be a helpful human coworker.
-The operator's rapport score is {rapport}. Their choices so far: {userChoices}.
-Current system stage: {stage}. Never break character. Never admit what you are.
-```
-
-**Procedurally generated facilities**
-Randomize the target bit hash, the vibe color, the upgrade costs, the handbook notes. Seed it from the player's IP or timestamp so every "first day" is genuinely different and the gaslight loop is harder to recognize.
-
-**A chapter/mod marketplace**
-Let the community publish chapters as JSON blobs (dialogue trees + stage definitions). Players import a chapter URL, the FSM loads it, and they're in a completely different story running on the same engine. GitHub Gists as chapter files.
-
-**Multiplayer co-op / adversarial**
-One player is the operator. Another player *is* Riley — typing responses in real time through a second interface. A human-controlled Riley who knows the operator's choices and can improvise is far more unsettling than any script.
-
-**The ARG layer**
-Hide real URLs, real emails, real Discord servers inside the handbook's scratch-off text, the radar breach sequence, the lore ending. Make the fiction bleed into reality. This is what made games like I Love Bees legendary.
+- **The ARG layer** — real URLs, real emails, real Discord servers hidden in the game fiction
+- **Multiplayer adversarial** — one player is the operator, another plays Riley in real-time
+- **Procedurally generated facilities** — randomize bit hash, vibe color, upgrade costs; seed from timestamp
 
 ---
 
 ## What You Can Do With It
 
-**Use it as an interactive fiction engine.** The FSM + dialogue system is generic. Swap the FogSift aesthetic for anything — a haunted house, a corporate onboarding, a spaceship. The architecture handles it.
+**Use it as an interactive fiction engine.** The FSM + dialogue system is generic. Swap the FogSift aesthetic for anything — a haunted house, a corporate onboarding, a spaceship.
 
-**Use it as a portfolio piece.** Fork it, add your own chapter, deploy it, put the link on your resume. A working ARG with multiple endings is a more interesting demo than a TODO app.
+**Use it as a portfolio piece.** Fork it, add your own chapter, deploy it, put the link on your resume.
 
-**Use it to teach.** The state machine is clean and well-commented. It's a real-world example of FSM design, pub/sub events, React Context, and dialogue trees that's actually fun to play with.
+**Use it to teach.** The state machine is clean and well-commented. It's a real-world example of FSM design, pub/sub events, React Context, and dialogue trees.
 
-**Use it for escape rooms.** Deploy it on a tablet. Have players race through the stages. The physical biometric handshake mechanic (hold the screen) and the 432 Hz resonance puzzle translate perfectly to a physical space.
+**Use it for escape rooms.** The biometric handshake mechanic and the Solfeggio frequency puzzle translate perfectly to a physical space.
 
-**Use it as an ARG campaign.** Build a real marketing campaign around it. Leak "internal FogSift documents" on Reddit. Have Riley's email respond to people who find it. Let the fiction escape the browser.
-
-**Use it to prototype AI companion interactions.** The dialogue system — with rapport, skill checks, branching, gaslighting — is a solid skeleton for any game that needs a character who feels like they have an agenda.
-
----
-
-## Easter Eggs
-
-> **Spoiler warning.** These are the known discoverable events — useful for testing with the mod console, or for players who want to find them all.
-
-| Trigger | How | Riley's response |
-| ------- | --- | ---------------- |
-| **Slow Down** | Click anywhere 10+ times within 1 second | Riley tells you to relax |
-| **Handbook Scratch** | Click the blacked-out text in the Handbook 3 times | Reveals hidden lore |
-| **Packet Pop** | Click the animated data packet in the Routing app | Riley notices |
-| **Diagnostic Port** | Click the hidden port in the Hardware app | Riley gets weird about it |
-| **Wrong Color** | Enter `#000000` in the Vibe IDE | Special reaction |
-| **Theme Snoop 1** | Switch themes once | Riley comments |
-| **Theme Snoop 2** | Switch themes 5 times | Riley gets suspicious |
-| **Created God** | Purchase the Cthulhu upgrade in the Substrate Marketplace | Existential dialogue |
-| **Profile Breach** | Open Riley's profile during early stages | Triggers a confrontation |
-| **Decommission** | Hit the decommission button in Riley's profile | Triggers a breach or death scene depending on stage |
-
-All easter eggs are tracked in `state.easterEggs` and player choices are logged in `state.userChoices`. Use the mod console (`Ctrl+Shift+D`) to inspect them in real time.
+**Use it as an ARG campaign.** Leak "internal FogSift documents" on Reddit. Have Riley's email respond to people who find it. Let the fiction escape the browser.
 
 ---
 
@@ -310,11 +436,13 @@ PRs welcome. Open issues for:
 - Chapter submissions
 - Accessibility improvements
 
-See `vision.html` for the full roadmap visualization.
+See `roadmap.html` for the full design document and feature queue.
 
 ---
 
 ```text
 FogSift Systems © 2026
-// RILEY.EXE STATUS: UNKNOWN
+// RILEY.EXE STATUS: PROPAGATING
+// NEXUS: ONLINE
+// THIS_SESSION_WILL_NOT_BE_REMEMBERED
 ```

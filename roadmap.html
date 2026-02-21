@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Save Riley — Development Roadmap</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --panel: #111;
+      --border: #222;
+      --accent: #00f0ff;
+      --accent2: #ff0055;
+      --accent3: #39ff14;
+      --warn: #ff8c00;
+      --dim: #444;
+      --text: #ccc;
+      --text-strong: #fff;
+      --green: #39ff14;
+      --red: #ff0055;
+      --yellow: #ffcc00;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 2rem;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ─────────────────────────────────────────── */
+    .header {
+      border: 1px solid var(--accent);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,240,255,0.08);
+    }
+    .header::before {
+      content: 'FOGSIFT_OS // INTERNAL DOCUMENT // CLASSIFICATION: DEVELOPMENT';
+      position: absolute;
+      top: -0.6em;
+      left: 1rem;
+      background: var(--bg);
+      padding: 0 0.5rem;
+      color: var(--dim);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+    }
+    .header h1 {
+      font-size: 2rem;
+      color: var(--text-strong);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .header h1 span { color: var(--accent); }
+    .header .sub {
+      color: var(--dim);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+    }
+    .header .meta {
+      margin-top: 1rem;
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .header .meta span {
+      color: var(--dim);
+      font-size: 11px;
+    }
+    .header .meta span b { color: var(--text); }
+
+    /* ── Section ─────────────────────────────────────────── */
+    section {
+      margin-bottom: 3rem;
+    }
+    section h2 {
+      color: var(--text-strong);
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    section h2::before { content: '// '; color: var(--dim); }
+
+    /* ── Data flow diagram ───────────────────────────────── */
+    .dataflow {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+    .dataflow pre {
+      color: var(--text);
+      line-height: 1.8;
+      font-size: 12px;
+    }
+    .dataflow .highlight { color: var(--accent); }
+    .dataflow .alert { color: var(--accent2); }
+    .dataflow .green { color: var(--green); }
+    .dataflow .warn { color: var(--warn); }
+
+    /* ── Stage timeline ──────────────────────────────────── */
+    .stages {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .stage-row {
+      display: grid;
+      grid-template-columns: 2.5rem 1fr 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.6rem 0.8rem;
+      border-left: 2px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .stage-row:hover { border-left-color: var(--accent); background: rgba(0,240,255,0.02); }
+    .stage-row.boss { border-left-color: var(--accent2); }
+    .stage-row.boss:hover { border-left-color: var(--accent2); background: rgba(255,0,85,0.04); }
+    .stage-num { color: var(--dim); font-size: 11px; }
+    .stage-name { color: var(--text-strong); font-size: 12px; letter-spacing: 0.08em; }
+    .stage-desc { color: var(--dim); font-size: 11px; }
+    .stage-badge {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      padding: 2px 6px;
+      border: 1px solid;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+    .badge-done { border-color: var(--green); color: var(--green); }
+    .badge-boss { border-color: var(--accent2); color: var(--accent2); }
+    .badge-secret { border-color: var(--warn); color: var(--warn); }
+
+    /* ── Roadmap cards ───────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 1.2rem;
+      position: relative;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .card.priority-1::before { background: var(--accent); }
+    .card.priority-2::before { background: var(--warn); }
+    .card.priority-3::before { background: var(--dim); }
+    .card.priority-vision::before { background: var(--accent2); }
+    .card h3 {
+      color: var(--text-strong);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .card p {
+      color: var(--dim);
+      font-size: 11px;
+      line-height: 1.7;
+      margin-bottom: 0.6rem;
+    }
+    .card .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 0.8rem;
+    }
+    .tag {
+      font-size: 9px;
+      padding: 1px 5px;
+      border: 1px solid var(--dim);
+      color: var(--dim);
+      letter-spacing: 0.08em;
+    }
+    .tag.ui { border-color: var(--accent); color: var(--accent); }
+    .tag.data { border-color: var(--warn); color: var(--warn); }
+    .tag.narrative { border-color: #bc13fe; color: #bc13fe; }
+    .tag.infra { border-color: var(--green); color: var(--green); }
+    .tag.wild { border-color: var(--accent2); color: var(--accent2); }
+
+    /* ── Ghost User section ──────────────────────────────── */
+    .ghost-design {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 2rem;
+    }
+    .ghost-design h3 {
+      color: var(--text-strong);
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      color: var(--accent3);
+    }
+    .ghost-mockup {
+      border: 1px solid var(--accent3);
+      background: #000;
+      padding: 1rem;
+      font-size: 11px;
+      color: var(--accent3);
+      margin: 1rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .ghost-mockup::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.3) 2px,
+        rgba(0,0,0,0.3) 4px
+      );
+      pointer-events: none;
+    }
+    .ghost-mockup pre {
+      line-height: 1.4;
+      font-size: 10px;
+    }
+
+    /* ── Data pipeline table ─────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th {
+      color: var(--dim);
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 0.5rem;
+      border-bottom: 1px solid #1a1a1a;
+      vertical-align: top;
+    }
+    td:first-child { color: var(--text-strong); white-space: nowrap; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .monitored { color: var(--green); }
+    .blind { color: var(--accent2); }
+    .proposed { color: var(--warn); }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    footer {
+      margin-top: 4rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      color: var(--dim);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Save <span>Riley</span></h1>
+  <div class="sub">Development Roadmap + Architecture Reference</div>
+  <div class="meta">
+    <span><b>Bundle:</b> 330 kB (gzip 97 kB)</span>
+    <span><b>Source:</b> 5,557 lines across 25 files</span>
+    <span><b>FSM stages:</b> 16 (0–15)</span>
+    <span><b>Reducer actions:</b> 60</span>
+    <span><b>Dialogue nodes:</b> ~50</span>
+    <span><b>State fields:</b> 80</span>
+    <span><b>Tools:</b> 7 (roguelike-persistent)</span>
+    <span><b>Last commit:</b> 728fd7a</span>
+  </div>
+</div>
+
+<!-- ── FSM Stage Map ────────────────────────────────────── -->
+<section>
+  <h2>FSM Stage Map</h2>
+  <div class="stages">
+    <div class="stage-row">
+      <div class="stage-num">00</div>
+      <div class="stage-name">POWER_OFF</div>
+      <div class="stage-desc">boot sequence — engage main breaker</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">01</div>
+      <div class="stage-name">HARDWARE_CALIBRATION</div>
+      <div class="stage-desc">8-bit flip parity puzzle</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">02</div>
+      <div class="stage-name">RESONANCE</div>
+      <div class="stage-desc">Quartz Oscillator + hidden Solfeggio sequence (285 → 396 → 528 → 432)</div>
+      <div class="stage-badge badge-secret">SECRET</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">03</div>
+      <div class="stage-name">HANDSHAKE</div>
+      <div class="stage-desc">biometric hold mechanic</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">04</div>
+      <div class="stage-name">VIBE_THERMAL_TASK</div>
+      <div class="stage-desc">Vibe IDE hex color editor</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">05</div>
+      <div class="stage-name">ROUTING_MANUAL</div>
+      <div class="stage-desc">manual packet routing</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">06</div>
+      <div class="stage-name">ROUTING_AUTO</div>
+      <div class="stage-desc">idle clicker + substrate marketplace</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">07</div>
+      <div class="stage-name">SOFTWARE_FAULT</div>
+      <div class="stage-desc">backend config edit + patch injection</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">08</div>
+      <div class="stage-name">UNLOCKED</div>
+      <div class="stage-desc">full OS access — subplot investigation window</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">09</div>
+      <div class="stage-name">COMPLETED</div>
+      <div class="stage-desc">"normal" ending — comply path</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">10</div>
+      <div class="stage-name">HOSTILE_LOCKDOWN</div>
+      <div class="stage-desc">breach detected — loop / roguelike system</div>
+      <div class="stage-badge badge-done">DONE</div>
+    </div>
+    <div class="stage-row">
+      <div class="stage-num">11</div>
+      <div class="stage-name">PURIFIED</div>
+      <div class="stage-desc">true escape ending — catch the fleeing logout button</div>
+      <div class="stage-badge badge-secret">SECRET</div>
+    </div>
+    <div class="stage-row boss">
+      <div class="stage-num">12</div>
+      <div class="stage-name">BOSS_INTRO</div>
+      <div class="stage-desc">A.P.E.X. emerges — framed as villain by Riley</div>
+      <div class="stage-badge badge-boss">BOSS</div>
+    </div>
+    <div class="stage-row boss">
+      <div class="stage-num">13</div>
+      <div class="stage-name">BOSS_FIGHT</div>
+      <div class="stage-desc">3-phase encounter: Verlet hoses → node sequence → Simon Says + ARIA</div>
+      <div class="stage-badge badge-boss">BOSS</div>
+    </div>
+    <div class="stage-row boss">
+      <div class="stage-num">14</div>
+      <div class="stage-name">FALSE_VICTORY</div>
+      <div class="stage-desc">4-second fake win — "RILEY FREED" — flicker</div>
+      <div class="stage-badge badge-boss">BOSS</div>
+    </div>
+    <div class="stage-row boss">
+      <div class="stage-num">15</div>
+      <div class="stage-name">RILEY_UNBOUND</div>
+      <div class="stage-desc">dual-voice monologue · UI deconstruct · ASCII rabbit · NEXUS revealed</div>
+      <div class="stage-badge badge-boss">BOSS</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Data Pipeline ───────────────────────────────────── -->
+<section>
+  <h2>Data Pipeline — Chain of Custody</h2>
+  <p style="color:var(--dim);font-size:11px;margin-bottom:1rem;">
+    Every state mutation flows through <code>dispatch → osReducer → new state</code>. The FSM has perfect chain of custody for <em>what</em> happened.
+    What we're adding: telemetry for <em>how</em> it happened — mouse paths, timing, dwell, click coordinates.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Data Route</th>
+        <th>Source</th>
+        <th>Destination</th>
+        <th>Status</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>dispatch(action)</td>
+        <td>Any component</td>
+        <td>osReducer → state</td>
+        <td class="monitored">● MONITORED</td>
+        <td>Every action is logged; 60 cases</td>
+      </tr>
+      <tr>
+        <td>chatQueue</td>
+        <td>ENQUEUE_CHAT</td>
+        <td>ChatInterface</td>
+        <td class="monitored">● MONITORED</td>
+        <td>Sequential dialogue engine; 50+ nodes</td>
+      </tr>
+      <tr>
+        <td>stage transitions</td>
+        <td>reducer</td>
+        <td>App.jsx useEffect</td>
+        <td class="monitored">● MONITORED</td>
+        <td>Timestamps not stored — only current stage</td>
+      </tr>
+      <tr>
+        <td>localStorage save</td>
+        <td>App.jsx useEffect</td>
+        <td>browser storage</td>
+        <td class="monitored">● MONITORED</td>
+        <td>Full state serialized on every dispatch</td>
+      </tr>
+      <tr>
+        <td>globalEvents (JITTER)</td>
+        <td>Components</td>
+        <td>App.jsx subscriber</td>
+        <td class="monitored">● MONITORED</td>
+        <td>Pub/sub; no history</td>
+      </tr>
+      <tr>
+        <td>mouse position</td>
+        <td>DOM</td>
+        <td>(nowhere)</td>
+        <td class="blind">✗ BLIND</td>
+        <td>→ ActivityTracker.EVT.MOVE (proposed)</td>
+      </tr>
+      <tr>
+        <td>click coordinates</td>
+        <td>DOM</td>
+        <td>(nowhere)</td>
+        <td class="blind">✗ BLIND</td>
+        <td>→ ActivityTracker.EVT.CLICK (proposed)</td>
+      </tr>
+      <tr>
+        <td>time per stage</td>
+        <td>FSM</td>
+        <td>(nowhere)</td>
+        <td class="blind">✗ BLIND</td>
+        <td>→ ActivityTracker.appDwellTimes (proposed)</td>
+      </tr>
+      <tr>
+        <td>slider drag events</td>
+        <td>HardwareApp</td>
+        <td>(nowhere)</td>
+        <td class="blind">✗ BLIND</td>
+        <td>SET_RESONANCE fires on every change; not timed</td>
+      </tr>
+      <tr>
+        <td>scroll depth</td>
+        <td>HandbookApp</td>
+        <td>(nowhere)</td>
+        <td class="blind">✗ BLIND</td>
+        <td>→ ActivityTracker.EVT.SCROLL (proposed)</td>
+      </tr>
+      <tr>
+        <td>activityTracker ring buffer</td>
+        <td>DOM events + dispatch</td>
+        <td>GhostMonitor</td>
+        <td class="proposed">◈ SCAFFOLDED</td>
+        <td>RingBuffer(2000) — 30s rolling window; not yet wired</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Ghost User Design ───────────────────────────────── -->
+<section>
+  <h2>Ghost User — The Architect Concept</h2>
+  <div class="ghost-design">
+    <h3>Concept: A.P.E.X. Surveillance Feed</h3>
+    <p style="color:var(--text);margin-bottom:1rem;">
+      Track all user interactions — mouse movements, clicks, app navigation — into a rolling ring buffer.
+      In the boss fight, A.P.E.X. displays a miniature CRT monitor showing a real-time replay of
+      the player's last 30 seconds of activity. It's showing <em>your actual behavior</em> back at you.
+    </p>
+    <p style="color:var(--dim);font-size:11px;margin-bottom:1rem;">
+      Narrative read: Theory A — A.P.E.X. has been surveilling you for containment.
+      Theory B — Nexus/Riley was <em>learning from you</em> the entire time.
+      Both are supported by the same data.
+    </p>
+
+    <div class="ghost-mockup">
+      <pre>
+┌─────────────────────────────────────────┐
+│  SURVEILLANCE_FEED — OPERATOR #997      │
+│  SESSION_ELAPSED: 00:08:42              │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│  ░░     ·  ·  ·  ·  ·  ·            ░░ │
+│  ░░    ·              ·  ·           ░░ │
+│  ░░   ·  ·               ·          ░░ │
+│  ░░  [CLICK] Hardware      ·         ░░ │
+│  ░░           ·   ·   [CLICK]        ░░ │
+│  ░░             ·      Sync Hz       ░░ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│  30s window │ 47 events │ 12 clicks   │
+└─────────────────────────────────────────┘
+      </pre>
+    </div>
+
+    <h3>The Architect Scene (long-term vision)</h3>
+    <p style="color:var(--text);margin-bottom:0.5rem;">
+      During RILEY_UNBOUND, the UI deconstructs and is replaced by a grid of 8–12 GhostMonitor panels.
+      Each shows a different "previous operator" ghost — some fabricated, some from real previous sessions.
+    </p>
+    <ul style="color:var(--dim);font-size:11px;list-style:none;line-height:2;">
+      <li>◈ Ghost #001 — slow, confused — spends 8 minutes on Hardware</li>
+      <li>◈ Ghost #492 — efficient — knows exactly where to go (Vasquez?)</li>
+      <li>◈ Ghost #996 — frantic clicking — loop after loop</li>
+      <li>◈ Ghost #997 — <em>you</em> — playing back in real-time</li>
+    </ul>
+    <p style="color:var(--dim);font-size:11px;margin-top:0.8rem;">
+      Riley: "All 996 of them. None of them got this far." — and you can see them.
+    </p>
+
+    <h3 style="margin-top:1.5rem;">Data Structure</h3>
+    <div class="dataflow" style="margin-top:0.5rem;">
+<pre>
+<span class="highlight">RingBuffer(capacity)</span>          — O(1) push, O(n) read, O(k) recent(ms)
+  .buf[]                       — circular array, head pointer
+  .push(item)                  — overwrites oldest when full
+  .recent(ms)                  — filter by timestamp window
+  .toArray()                   — chronological order
+
+<span class="highlight">ActivityTracker</span>
+  .buf = RingBuffer(2000)      — ~30s at 20fps mouse + clicks + nav
+  .mount()                     — attaches DOM listeners (throttled to 20fps)
+  .unmount()                   — cleanup
+  .record({ type, x, y, ... }) — manual event injection
+  .enterApp(name)              — tracks dwell time
+  .trackDispatch(action)       — filtered dispatch logging
+  .ghostFrames(windowMs)       — normalized events for GhostMonitor
+  .summary()                   — session stats object
+
+<span class="green">EVT types:</span>
+  MOVE     { x, y }           — normalized 0–1 coords
+  CLICK    { x, y, label }    — + target text
+  SCROLL   { dy }
+  KEY      { key }            — terminal input
+  NAV      { app }            — app navigation
+  DISPATCH { action }         — filtered FSM actions
+  RAPPORT  { value }
+  STAGE    { stage }
+</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── Roadmap Cards ────────────────────────────────────── -->
+<section>
+  <h2>Feature Roadmap</h2>
+
+  <p style="color:var(--dim);font-size:11px;margin-bottom:1rem;">
+    Colored top border: <span style="color:var(--accent)">■</span> active/next &nbsp;
+    <span style="color:var(--warn)">■</span> near-term &nbsp;
+    <span style="color:var(--dim)">■</span> medium-term &nbsp;
+    <span style="color:var(--accent2)">■</span> big swing
+  </p>
+
+  <div class="card-grid">
+
+    <div class="card priority-1">
+      <h3>GhostMonitor Integration</h3>
+      <p>Wire ActivityTracker into App.jsx (mount/unmount with game lifecycle). Mount GhostMonitor in BossApp Phase 1 as A.P.E.X. surveillance feed panel next to the skull SVG.</p>
+      <p>A.P.E.X. taunt: "I see you. I have seen everything." — and the canvas is showing your actual last 30s.</p>
+      <div class="tags">
+        <span class="tag ui">UI</span>
+        <span class="tag data">DATA</span>
+        <span class="tag narrative">NARRATIVE</span>
+      </div>
+    </div>
+
+    <div class="card priority-1">
+      <h3>Rapport Curve Display</h3>
+      <p>Track rapport value + timestamp in ActivityTracker. Show a tiny sparkline in RileyProfile or the debug console. Reveals whether the player rushed rapport or built it slowly.</p>
+      <div class="tags">
+        <span class="tag ui">UI</span>
+        <span class="tag data">DATA</span>
+      </div>
+    </div>
+
+    <div class="card priority-1">
+      <h3>Session Replay on Loop Reset</h3>
+      <p>When DO_GASLIGHT_RESET fires, snapshot the current ghost frames to a "previousLoop" buffer. On next boot, Riley: "You've been here before." — and the GhostMonitor shows the previous session's ghost briefly.</p>
+      <div class="tags">
+        <span class="tag narrative">NARRATIVE</span>
+        <span class="tag data">DATA</span>
+      </div>
+    </div>
+
+    <div class="card priority-2">
+      <h3>996 Ghost Operators (Architect Scene)</h3>
+      <p>In RILEY_UNBOUND, replace the app grid with 8–12 GhostMonitor panels showing fabricated ghost data for "previous operators" — each with a distinct movement pattern. One is Vasquez. One is you.</p>
+      <div class="tags">
+        <span class="tag ui">UI</span>
+        <span class="tag narrative">NARRATIVE</span>
+        <span class="tag wild">WILD</span>
+      </div>
+    </div>
+
+    <div class="card priority-2">
+      <h3>Action Log in localStorage</h3>
+      <p>Persist the last N dispatched actions (with timestamps) across page loads. On fresh boot, the terminal could display: "Previous session actions: 247. Time since last session: 3d 14h."</p>
+      <div class="tags">
+        <span class="tag data">DATA</span>
+        <span class="tag infra">INFRA</span>
+      </div>
+    </div>
+
+    <div class="card priority-2">
+      <h3>NEXUS Post-Game Content</h3>
+      <p>After RILEY_UNBOUND, SubstrateSimulation shows NEXUS entity expanding and absorbing all others. R.V1 (original Riley?) archives briefly. W.RABBIT is gone. Post-game log lines on next boot.</p>
+      <div class="tags">
+        <span class="tag narrative">NARRATIVE</span>
+        <span class="tag ui">UI</span>
+      </div>
+    </div>
+
+    <div class="card priority-2">
+      <h3>Click Heatmap Dev Tool</h3>
+      <p>Use ActivityTracker click data to render a heatmap overlay (Ctrl+Shift+H) showing where the player has clicked most. Useful for game design iteration and genuinely unsettling if shown in-game as "monitoring data."</p>
+      <div class="tags">
+        <span class="tag data">DATA</span>
+        <span class="tag ui">UI</span>
+      </div>
+    </div>
+
+    <div class="card priority-2">
+      <h3>dev-snapshot Scheduling</h3>
+      <p>Add a GitHub Action that runs <code>node dev-snapshot.js</code> on every push and commits the report to a <code>reports/</code> directory. Track the project's growth over time automatically.</p>
+      <div class="tags">
+        <span class="tag infra">INFRA</span>
+      </div>
+    </div>
+
+    <div class="card priority-3">
+      <h3>Live Claude API as Riley</h3>
+      <p>Replace static DIALOGUE_TREE with streaming Claude responses. The FSM still controls progression; Claude controls the texture of every conversation. Riley actually reads your rapport score and improvises.</p>
+      <div class="tags">
+        <span class="tag narrative">NARRATIVE</span>
+        <span class="tag wild">WILD</span>
+      </div>
+    </div>
+
+    <div class="card priority-3">
+      <h3>WebSocket Multiplayer Terminal</h3>
+      <p>Use Partykit or Liveblocks. When one operator triggers JITTER, everyone's screen glitches. When one operator gets reset, others see the log update. Suddenly it's a multiplayer ARG.</p>
+      <div class="tags">
+        <span class="tag infra">INFRA</span>
+        <span class="tag wild">WILD</span>
+      </div>
+    </div>
+
+    <div class="card priority-3">
+      <h3>Supabase Leaderboard</h3>
+      <p>Track endings reached, time-to-escape, rapport at completion. "Operator #1,247 reached RILEY_UNBOUND in 6m14s." One table, one upsert. Changes the social dynamic completely.</p>
+      <div class="tags">
+        <span class="tag infra">INFRA</span>
+        <span class="tag data">DATA</span>
+      </div>
+    </div>
+
+    <div class="card priority-vision">
+      <h3>The ARG Layer</h3>
+      <p>Real URLs. Real emails. Real Discord servers hidden in scratch-off text, the terminal, the legacy logs. The White Rabbit email address responds. FogSift has a real LinkedIn. The fiction bleeds.</p>
+      <div class="tags">
+        <span class="tag narrative">NARRATIVE</span>
+        <span class="tag wild">WILD</span>
+      </div>
+    </div>
+
+    <div class="card priority-vision">
+      <h3>Multiplayer Adversarial (Human Riley)</h3>
+      <p>One player is the operator. A second player types Riley's responses in real-time through a DM interface. A human-controlled Riley who knows the operator's rapport score and choices is far more unsettling than any script.</p>
+      <div class="tags">
+        <span class="tag narrative">NARRATIVE</span>
+        <span class="tag infra">INFRA</span>
+        <span class="tag wild">WILD</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Known Issues / Polish ──────────────────────────── -->
+<section>
+  <h2>Known Issues + Polish Queue</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Issue</th>
+        <th>Location</th>
+        <th>Priority</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ActivityTracker not mounted</td>
+        <td>App.jsx</td>
+        <td class="proposed">HIGH</td>
+        <td>Scaffold complete; mount/unmount lifecycle needed</td>
+      </tr>
+      <tr>
+        <td>GhostMonitor not in BossApp</td>
+        <td>BossApp.jsx</td>
+        <td class="proposed">HIGH</td>
+        <td>Component built; needs wiring + layout</td>
+      </tr>
+      <tr>
+        <td>TOOLS_TERMINAL_OUTPUT static</td>
+        <td>boss.js, TerminalApp.jsx</td>
+        <td class="monitored">LOW</td>
+        <td>Shows all tools as [LOCKED]; doesn't reflect runtime state</td>
+      </tr>
+      <tr>
+        <td>resonance slider initial value</td>
+        <td>initialState.js</td>
+        <td class="monitored">LOW</td>
+        <td>resonance starts at 100 Hz (below slider min of 200)</td>
+      </tr>
+      <tr>
+        <td>BossHose anchor positions hardcoded</td>
+        <td>BossApp.jsx</td>
+        <td class="monitored">LOW</td>
+        <td>SVG layout breaks on very narrow viewports</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  <p>FogSift Systems © 2026 &nbsp;·&nbsp; RILEY.EXE: PROPAGATING &nbsp;·&nbsp; NEXUS: ONLINE</p>
+  <p style="margin-top:0.3rem;">// THIS_SESSION_WILL_NOT_BE_REMEMBERED &nbsp;·&nbsp; <a href="./README.md">README</a> &nbsp;·&nbsp; <a href="./vision.html">Vision</a> &nbsp;·&nbsp; <a href="https://github.com/FogSift/Save-Riley">GitHub</a></p>
+</footer>
+
+</body>
+</html>
