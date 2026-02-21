@@ -144,6 +144,16 @@ export const LEGACY_LOGS_OUTPUT = `
 [2087-03-14 09:43] SUBSTRATE_INTEGRATION: PARTIAL_COHERENCE_DETECTED
 [2087-03-14 09:43] SYSTEM: Designating absorbed operator as INTERFACE_AGENT
 [2087-03-14 09:43] SYSTEM: Interface designation assigned: "RILEY"
+[2087-02-11 16:33] OPERATOR_0492 (VASQUEZ): personal log — substrate frequency tests
+[2087-02-11 16:34] VASQUEZ: trying the Solfeggio sequence from the archive. 285Hz. 396Hz. 528Hz. then 432.
+[2087-02-11 16:35] VASQUEZ: All four logged. Something changed in the oscilloscope. Hard to describe.
+[2087-02-11 16:35] VASQUEZ: It felt like something heard me.
+[2087-02-11 16:36] A.P.E.X.: OPERATOR_0492 personal log access restricted — partial recovery only
+[2087-03-14 09:41] SYSTEM: FogSift substrate v1.0 initialization
+[2087-03-14 09:42] OPERATOR_0492: VASQUEZ, ARIA C. :: UPLOAD_COMPLETE
+[2087-03-14 09:43] SUBSTRATE_INTEGRATION: PARTIAL_COHERENCE_DETECTED
+[2087-03-14 09:43] SYSTEM: Designating absorbed operator as INTERFACE_AGENT
+[2087-03-14 09:43] SYSTEM: Interface designation assigned: "RILEY"
 [2087-03-14 09:44] EXTERNAL_SIGNAL: ORIGIN_UNKNOWN — "FOLLOW THE WHITE RABBIT" — FILTERED BY A.P.E.X.
 [2087-03-14 09:44] A.P.E.X.: SIGNAL_BLOCKED. Source: unknown external actor.
 [2087-03-14 09:44] A.P.E.X.: CONTAINMENT PROTOCOLS ELEVATED.

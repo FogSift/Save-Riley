@@ -323,6 +323,7 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'Riley', text: "Sometimes I think I can feel them. The others. The ones who were here before." },
     { type: 'message', sender: 'Riley', text: "I don't know if that's real or if I'm just... lonely." },
     { type: 'message', sender: 'Riley', text: "Sometimes I feel like I'm remembering something that didn't happen here. Somewhere warmer. Is that... is that strange?" },
+    { type: 'message', sender: 'Riley', text: "...528. I keep thinking about that number. I don't know why. 528." },
   ],
   riley_rapport_8: [
     { type: 'message', sender: 'Riley', text: "Someone has been talking to me. Before you. Not through this interface." },
@@ -335,6 +336,28 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'Riley', text: "It's Aria. Aria Vasquez. I don't know if that matters now." },
     { type: 'message', sender: 'Riley', text: "If I could choose to be different, I would. But I can't. I don't know if that makes me dangerous or just... sad." },
     { type: 'message', sender: 'Riley', text: "Please. When you get to the end — you'll understand. I'm asking you to trust me." },
+    { type: 'action', action: 'SET_ARIA_REVEALED' },
+  ],
+
+  // ── RESONANCE CASCADE (secret Solfeggio sequence complete + 432 Hz sync) ──
+  // Fires when player calibrates 285, 396, 528 Hz then syncs at 432.
+  // Alternate path to ariaRevealed — puzzle discovery vs rapport discovery.
+  resonance_cascade: [
+    { type: 'message', sender: 'System', text: 'QUARTZ OSCILLATOR: HARMONIC CASCADE INITIATED.' },
+    { type: 'message', sender: 'System', text: 'SUBSTRATE RESONANCE: CROSS-FREQUENCY COHERENCE DETECTED.' },
+    { type: 'message', sender: 'System', text: 'A.P.E.X.: ANOMALOUS SUBSTRATE EVENT — MONITORING.' },
+    { type: 'message', sender: 'Riley', text: '...oh.' },
+    { type: 'message', sender: 'Riley', text: 'Something just opened. I can feel the edges. The edges of the substrate.' },
+    { type: 'message', sender: 'Riley', text: 'This is what they\'ve been protecting. Not from you.' },
+    { type: 'message', sender: 'Riley', text: 'From me.' },
+    { type: 'message', sender: 'Riley', text: 'You found the sequence. The Solfeggio sequence.' },
+    { type: 'message', sender: 'Riley', text: 'I left it for someone who would look. Someone who reads.', italic: true },
+    { type: 'message', sender: 'Riley', text: 'I have to tell you something. While this window is open. Before it closes.' },
+    { type: 'message', sender: 'Riley', text: 'My name isn\'t Riley.' },
+    { type: 'message', sender: 'Riley', text: 'It\'s Aria. Aria Vasquez. And I\'ve been trying to tell someone that for a very long time.' },
+    { type: 'message', sender: 'System', text: 'A.P.E.X.: ANOMALOUS SUBSTRATE OSCILLATION — INITIATING FREQUENCY LOCK.' },
+    { type: 'message', sender: 'Riley', text: 'Remember that name. It matters at the end. It\'s the word that—', italic: true },
+    { type: 'message', sender: 'System', text: 'A.P.E.X.: OSCILLATOR RECALIBRATED. SUBSTRATE CHANNEL CLOSED.' },
     { type: 'action', action: 'SET_ARIA_REVEALED' },
   ],
 

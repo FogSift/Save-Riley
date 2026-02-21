@@ -76,4 +76,5 @@ export const initialState = {
   backendPatchCount: 0,   // counts APPLY_PATCH successes across all loops
   archivedEntities: 0,    // counts entity eliminations in SubstrateSimulation
   nexusFirstSeen: false,  // true after RILEY_UNBOUND — enables post-game content
+  calibratedFreqs: [],    // secret Solfeggio freqs logged; persists across resets
 };

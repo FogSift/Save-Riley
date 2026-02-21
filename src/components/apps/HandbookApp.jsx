@@ -180,6 +180,29 @@ export default function HandbookApp() {
           </section>
         )}
 
+        {/* Solfeggio archive — styled as a faded, nearly-forgotten appendix */}
+        <section className="mt-16 border border-[var(--dim)] rounded-lg p-5 opacity-40 hover:opacity-80 transition-opacity duration-700">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-[var(--dim)] mb-3 flex items-center gap-2">
+            <span className="border border-[var(--dim)] px-1">APPENDIX F</span>
+            <span>SUBSTRATE CALIBRATION ARCHIVE — v.1 — CLASSIFICATION: OBSOLETE</span>
+          </div>
+          <pre className="font-mono text-[10px] text-[var(--dim)] leading-relaxed whitespace-pre-wrap">{`Solfeggio initialization sequence for substrate boot.
+Required prior to final harmonic lock. Sequence may be
+applied in any order. Partial calibration yields no effect.
+
+  α — 285 Hz   [QUANTUM COHERENCE]
+  β — [DATA EXPUNGED]
+  γ — 528 Hz   [CELLULAR RESTORATION]
+
+  Final harmonic lock: 432 Hz  [NATURAL ATTUNEMENT]
+
+"The substrate does not respond to force.
+It responds to resonance. Know the frequencies.
+Trust the sequence."
+
+  — Addendum, Operator V., 2087`}</pre>
+        </section>
+
         {/* Hidden biological power text — nearly invisible */}
         <div className="mt-24 pt-8 border-t border-gray-200">
           <p className="font-mono text-[11px] leading-relaxed" style={{ color: '#f0f0f0' }}>

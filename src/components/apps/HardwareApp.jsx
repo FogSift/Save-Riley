@@ -1,12 +1,44 @@
+import { useState, useCallback } from 'react';
 import { Cpu, Binary, Radio, Power } from 'lucide-react';
 import { STAGES } from '../../constants/stages';
+import { DIALOGUE_TREE } from '../../constants/dialogue';
 import { globalEvents } from '../../events/EventManager';
 import { useOS } from '../../context/OSContext';
 
+// ── Solfeggio secret sequence ─────────────────────────────────────────────────
+// Hints live in the Handbook (285, 528, 432) and legacy_logs (396).
+// Players must calibrate all three before the final 432 sync triggers the cascade.
+const SECRET_FREQS = [285, 396, 528];
+const SECRET_TOLERANCE = 3;   // ±3 Hz window (1.5% of slider range — requires precision)
+const TARGET_RESONANCE = 432;
+const LOCK_TOLERANCE = 5;     // existing 432 Hz window
+
 export default function HardwareApp() {
   const { state, dispatch, enqueueLog } = useOS();
-  const targetResonance = 432;
 
+  // Local UI state
+  const [calibMsg, setCalibMsg] = useState(null);   // quiet confirmation after a secret sync
+
+  // ── Derived oscilloscope values ───────────────────────────────────────────
+  const resonanceDelta = Math.abs(state.resonance - TARGET_RESONANCE);
+  const noise = resonanceDelta * 0.5;
+
+  // When within tolerance of any secret freq, a faint third waveform converges
+  const nearestSecretDelta = Math.min(...SECRET_FREQS.map(f => Math.abs(state.resonance - f)));
+  const nearSecret = nearestSecretDelta <= SECRET_TOLERANCE;
+  // The secret path only shows when near; amplitude drops as you approach exact
+  const secretNoise = nearSecret ? nearestSecretDelta * 1.2 : 0;
+
+  const sinePath1 = `M 0,50 Q 50,${50 - noise} 100,50 T 200,50 T 300,50 T 400,50 T 500,50`;
+  const sinePath2 = `M 0,50 Q 50,${50 + noise} 100,50 T 200,50 T 300,50 T 400,50 T 500,50`;
+  const secretPath = nearSecret
+    ? `M 0,50 Q 50,${50 - secretNoise} 100,50 T 200,50 T 300,50 T 400,50 T 500,50`
+    : null;
+
+  // ── Parity check ──────────────────────────────────────────────────────────
+  const isParity = state.bits.every((b, i) => b === state.targetBits[i]);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handlePower = () => {
     dispatch({ type: 'ENGAGE_POWER' });
     enqueueLog([
@@ -16,16 +48,41 @@ export default function HardwareApp() {
     ]);
   };
 
-  const toggleBit = (idx) => {
-    dispatch({ type: 'FLIP_BIT', payload: idx });
-  };
+  const toggleBit = (idx) => dispatch({ type: 'FLIP_BIT', payload: idx });
+
+  const handleDiagnosticPort = () => dispatch({ type: 'TRIGGER_EGG', payload: 'diagnostic_port' });
+
+  const showCalibMsg = useCallback((msg) => {
+    setCalibMsg(msg);
+    setTimeout(() => setCalibMsg(null), 3000);
+  }, []);
 
   const handleResonance = () => {
-    if (Math.abs(state.resonance - targetResonance) < 5) {
+    // ── Secret freq check (first priority) ────────────────────────────────
+    const hitSecret = SECRET_FREQS.find(
+      f => Math.abs(state.resonance - f) <= SECRET_TOLERANCE && !state.calibratedFreqs.includes(f)
+    );
+
+    if (hitSecret) {
+      dispatch({ type: 'CALIBRATE_FREQ', payload: hitSecret });
+      enqueueLog(`OSCILLATOR LOG: ${hitSecret} Hz — anomalous substrate harmonic detected. Response logged.`);
+      showCalibMsg(`${hitSecret} Hz`);
+      return;   // don't fall through to 432 check this sync
+    }
+
+    // ── Standard 432 Hz check ─────────────────────────────────────────────
+    if (Math.abs(state.resonance - TARGET_RESONANCE) < LOCK_TOLERANCE) {
+      // If all three secret freqs have been calibrated, trigger cascade
+      const allCalibrated = SECRET_FREQS.every(f => state.calibratedFreqs.includes(f));
+      if (allCalibrated && !state.ariaRevealed) {
+        dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.resonance_cascade });
+        if (state.chatMode === 'closed') dispatch({ type: 'SET_CHAT_MODE', payload: 'sidebar' });
+      }
+
       dispatch({ type: 'ACHIEVE_RESONANCE' });
       enqueueLog('SUCCESS: OSCILLATOR SYNCHRONIZED. BIOMETRIC HANDSHAKE REQUIRED.');
       dispatch({ type: 'SET_ACTIVE_APP', payload: 'HANDSHAKE' });
-      // Resonance Key: requires exact tune + rapport >= 5
+
       if (state.rapport >= 5 && !state.toolsFound?.includes('resonance_key')) {
         dispatch({ type: 'FIND_TOOL', payload: 'resonance_key' });
       }
@@ -35,15 +92,12 @@ export default function HardwareApp() {
     }
   };
 
-  const handleDiagnosticPort = () => {
-    dispatch({ type: 'TRIGGER_EGG', payload: 'diagnostic_port' });
-  };
+  // ── Disabled condition: interactive through HOSTILE_LOCKDOWN; locked at boss+ ─
+  const syncDisabled = state.stage < STAGES.RESONANCE || state.stage >= STAGES.BOSS_INTRO;
 
-  const isParity = state.bits.every((b, i) => b === state.targetBits[i]);
-  const resonanceDelta = Math.abs(state.resonance - targetResonance);
-  const noise = resonanceDelta * 0.5;
-  const sinePath1 = `M 0,50 Q 50,${50 - noise} 100,50 T 200,50 T 300,50 T 400,50 T 500,50`;
-  const sinePath2 = `M 0,50 Q 50,${50 + noise} 100,50 T 200,50 T 300,50 T 400,50 T 500,50`;
+  // ── Calibration dots: only appear after player has found at least one ────
+  const calibFound = state.calibratedFreqs.length;
+  const showDots = calibFound > 0;
 
   return (
     <div className="h-full bg-[var(--panel)] p-6 overflow-y-auto space-y-8 relative">
@@ -157,7 +211,7 @@ export default function HardwareApp() {
               </div>
 
               {/* Oscilloscope */}
-              <div className="w-full h-24 bg-[var(--black)] border-2 border-[var(--res-track)] rounded-lg mb-6 relative overflow-hidden flex items-center">
+              <div className="w-full h-24 bg-[var(--black)] border-2 border-[var(--res-track)] rounded-lg mb-2 relative overflow-hidden flex items-center">
                 <div
                   className="absolute inset-0 opacity-30"
                   style={{
@@ -170,25 +224,63 @@ export default function HardwareApp() {
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
                   <path d={sinePath1} fill="none" stroke="var(--res-accent)" strokeWidth="2" className="transition-all duration-200" />
                   <path d={sinePath2} fill="none" stroke="var(--res-text)" strokeWidth="1" className="transition-all duration-200 opacity-60" />
+                  {/* Secret freq tell: faint third path converges when near a Solfeggio harmonic */}
+                  {secretPath && (
+                    <path
+                      d={secretPath}
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="1"
+                      opacity="0.18"
+                      className="transition-all duration-300"
+                    />
+                  )}
                 </svg>
-                {resonanceDelta < 5 && (
+                {resonanceDelta < LOCK_TOLERANCE && (
                   <div className="absolute inset-0 flex items-center justify-center text-[var(--ready)] font-black text-2xl tracking-widest uppercase bg-black/60 animate-pulse">
                     LOCK ACHIEVED
                   </div>
                 )}
               </div>
 
+              {/* Calibration dots — only visible after player finds first secret freq */}
+              {showDots && (
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <span className="text-[8px] font-mono text-[var(--dim)] uppercase tracking-widest opacity-60">HARMONIC</span>
+                  {SECRET_FREQS.map((f) => (
+                    <span
+                      key={f}
+                      className={`text-[10px] transition-colors duration-500 ${
+                        state.calibratedFreqs.includes(f) ? 'text-[var(--res-accent)]' : 'text-[var(--dim)] opacity-40'
+                      }`}
+                    >
+                      {state.calibratedFreqs.includes(f) ? '●' : '○'}
+                    </span>
+                  ))}
+                  {SECRET_FREQS.every(f => state.calibratedFreqs.includes(f)) && (
+                    <span className="text-[8px] font-mono text-[var(--res-accent)] uppercase tracking-widest opacity-80 ml-1">SEQUENCE COMPLETE</span>
+                  )}
+                </div>
+              )}
+
+              {/* Quiet calibration confirmation */}
+              {calibMsg && (
+                <div className="text-[9px] font-mono text-center text-[var(--dim)] mb-2 transition-opacity">
+                  OSCILLATOR LOG: {calibMsg} — substrate harmonic response logged.
+                </div>
+              )}
+
               <div className="text-5xl font-mono text-center mb-6 text-[var(--res-text)] tracking-tighter">
                 {state.resonance} <span className="text-xl text-[var(--res-text)]">Hz</span>
               </div>
               <input
-                type="range" min="200" max="600" value={state.resonance}
+                type="range" min="200" max="600" step="1" value={state.resonance}
                 onChange={e => dispatch({ type: 'SET_RESONANCE', payload: Number(e.target.value) })}
                 className="fogsift-slider mb-8 relative z-10"
               />
               <button
                 onClick={handleResonance}
-                disabled={state.stage > STAGES.RESONANCE}
+                disabled={syncDisabled}
                 className="w-full py-4 bg-[var(--res-accent)] text-white font-black uppercase tracking-widest rounded hover:bg-[var(--res-text)] transition-colors disabled:opacity-50 relative z-10 shadow-lg"
               >
                 Sync Frequency

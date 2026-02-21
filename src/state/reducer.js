@@ -27,12 +27,16 @@ export function osReducer(state, action) {
     }
 
     case 'SET_RESONANCE':
-      if (state.stage < STAGES.RESONANCE || state.stage === STAGES.HOSTILE_LOCKDOWN) return state;
+      if (state.stage < STAGES.RESONANCE) return state;
       return { ...state, resonance: action.payload };
 
     case 'ACHIEVE_RESONANCE':
       if (state.stage === STAGES.RESONANCE) return { ...state, stage: STAGES.HANDSHAKE };
       return state;
+
+    case 'CALIBRATE_FREQ':
+      if (state.calibratedFreqs.includes(action.payload)) return state;
+      return { ...state, calibratedFreqs: [...state.calibratedFreqs, action.payload] };
 
     case 'COMPLETE_HANDSHAKE':
       return { ...state, stage: STAGES.VIBE_THERMAL_TASK, personality: 'awakened', logs: [] };
@@ -253,6 +257,7 @@ export function osReducer(state, action) {
         archivedEntities:   state.archivedEntities,
         legacyLogsUnlocked: state.legacyLogsUnlocked,
         nexusFirstSeen:     state.nexusFirstSeen,
+        calibratedFreqs:    state.calibratedFreqs,
       };
       if (state.loopCount === 0) {
         return {
