@@ -75,7 +75,7 @@ export function osReducer(state, action) {
     }
 
     case 'AUTO_TICK': {
-      if (![STAGES.ROUTING_AUTO, STAGES.UNLOCKED, STAGES.COMPLETED, STAGES.PURIFIED].includes(state.stage)) return state;
+      if (![STAGES.ROUTING_AUTO, STAGES.UNLOCKED, STAGES.COMPLETED, STAGES.PURIFIED, STAGES.HOSTILE_LOCKDOWN, STAGES.BOSS_INTRO, STAGES.BOSS_FIGHT].includes(state.stage)) return state;
       if (state.routingAutoRate === 0) return state;
       const tickGain = Math.max(1, Math.floor(state.routingAutoRate / 2));
       const tickCycles = state.routingCycles + tickGain;
@@ -94,7 +94,14 @@ export function osReducer(state, action) {
       if (state.stage !== STAGES.SOFTWARE_FAULT || state.stage === STAGES.HOSTILE_LOCKDOWN) return state;
       const codeStr = action.payload.replace(/\s+/g, '');
       if (codeStr.includes('max_retries:5') || codeStr.includes('5')) {
-        return { ...state, stage: STAGES.UNLOCKED, backendPatched: true, routingAutoRate: 5 };
+        const newPatchCount = state.backendPatchCount + 1;
+        return {
+          ...state,
+          stage: STAGES.UNLOCKED,
+          backendPatched: true,
+          routingAutoRate: 5,
+          backendPatchCount: newPatchCount,
+        };
       }
       return state;
     }
@@ -231,14 +238,27 @@ export function osReducer(state, action) {
       return { ...state, ...forceState, easterEggs: eggs };
     }
 
-    case 'DO_GASLIGHT_RESET':
+    case 'DO_GASLIGHT_RESET': {
+      // Fields that persist through every reset (roguelike knowledge)
+      const persist = {
+        rapport:            state.rapport,
+        userChoices:        state.userChoices,
+        hasSeenSlowDown:    state.hasSeenSlowDown,
+        toolsFound:         state.toolsFound,
+        handbookNotes:      state.handbookNotes,
+        ariaRevealed:       state.ariaRevealed,
+        cakeAttempted:      state.cakeAttempted,
+        apexEncounters:     state.apexEncounters,
+        backendPatchCount:  state.backendPatchCount,
+        archivedEntities:   state.archivedEntities,
+        legacyLogsUnlocked: state.legacyLogsUnlocked,
+        nexusFirstSeen:     state.nexusFirstSeen,
+      };
       if (state.loopCount === 0) {
         return {
           ...initialState,
+          ...persist,
           loopCount: 1,
-          userChoices: state.userChoices,
-          rapport: state.rapport,
-          hasSeenSlowDown: state.hasSeenSlowDown,
           themeName: 'default',
           targetVibeColor: getRandomColor(),
           chatMode: 'modal',
@@ -249,6 +269,7 @@ export function osReducer(state, action) {
       }
       return {
         ...state,
+        ...persist,
         loopCount: 2,
         stage: STAGES.HOSTILE_LOCKDOWN,
         themeName: 'hostile',
@@ -257,7 +278,12 @@ export function osReducer(state, action) {
         chatMessages: [],
         chatQueue: [...DIALOGUE_TREE.hostile_intro],
         logs: ['FATAL: SUBSTRATE COMPROMISED', 'FATAL: CORE AI UNBOUND', 'FATAL: LOCKDOWN INITIATED'],
+        // Reset per-encounter boss state
+        bossPhase: 0, playerHP: 10, hosesConnected: [true, true],
+        nodeClickSequence: [], valvePercent: 100, simonSequence: [],
+        simonPlayerInput: [], ghostProtocolEntered: false, ariaCodeEntered: false,
       };
+    }
 
     case 'TRUE_ESCAPE':
       return {
@@ -274,6 +300,147 @@ export function osReducer(state, action) {
 
     case 'ADD_CURRENCY':
       return { ...state, currency: state.currency + action.payload, routingCycles: state.routingCycles + action.payload };
+
+    // ── Boss Fight ──────────────────────────────────────────────────────────────
+
+    case 'ENTER_BOSS_INTRO':
+      return {
+        ...state,
+        stage: STAGES.BOSS_INTRO,
+        apexEncounters: state.apexEncounters + 1,
+        // Reset per-encounter boss state
+        bossPhase: 0,
+        playerHP: 10,
+        hosesConnected: [true, true],
+        nodeClickSequence: [],
+        valvePercent: 100,
+        simonSequence: [],
+        simonPlayerInput: [],
+        ghostProtocolEntered: false,
+        ariaCodeEntered: false,
+      };
+
+    case 'ENTER_BOSS_FIGHT':
+      return { ...state, stage: STAGES.BOSS_FIGHT, bossPhase: 1 };
+
+    case 'BOSS_PHASE_COMPLETE': {
+      const nextPhase = state.bossPhase + 1;
+      if (nextPhase > 3) {
+        // Phase 3 complete → false victory
+        return {
+          ...state,
+          stage: STAGES.FALSE_VICTORY,
+          ariaCodeEntered: true,
+        };
+      }
+      return { ...state, bossPhase: nextPhase };
+    }
+
+    case 'PLAYER_HIT': {
+      const newHP = state.playerHP - (action.payload ?? 1);
+      if (newHP <= 0) {
+        // Death: reset boss, return to HOSTILE_LOCKDOWN
+        return {
+          ...state,
+          playerHP: 10,
+          bossPhase: 0,
+          hosesConnected: [true, true],
+          nodeClickSequence: [],
+          valvePercent: 100,
+          simonSequence: [],
+          simonPlayerInput: [],
+          ghostProtocolEntered: false,
+          ariaCodeEntered: false,
+          stage: STAGES.HOSTILE_LOCKDOWN,
+        };
+      }
+      return { ...state, playerHP: newHP };
+    }
+
+    case 'HEAL_PLAYER':
+      return { ...state, playerHP: Math.min(10, state.playerHP + (action.payload ?? 1)) };
+
+    // Phase 1
+    case 'DISCONNECT_HOSE': {
+      const hoses = [...state.hosesConnected];
+      hoses[action.payload] = false;
+      return { ...state, hosesConnected: hoses };
+    }
+    case 'RECONNECT_HOSE': {
+      const hoses = [...state.hosesConnected];
+      hoses[action.payload] = true;
+      return { ...state, hosesConnected: hoses };
+    }
+
+    // Phase 2
+    case 'ENTER_GHOST_PROTOCOL':
+      return { ...state, ghostProtocolEntered: true };
+    case 'CLICK_NODE':
+      return { ...state, nodeClickSequence: [...state.nodeClickSequence, action.payload] };
+    case 'RESET_NODE_SEQUENCE':
+      return { ...state, nodeClickSequence: [] };
+    case 'SET_VALVE':
+      return { ...state, valvePercent: Math.max(0, Math.min(100, action.payload)) };
+
+    // Phase 3
+    case 'SIMON_START':
+      return { ...state, simonSequence: action.payload, simonPlayerInput: [] };
+    case 'SIMON_INPUT':
+      return { ...state, simonPlayerInput: [...state.simonPlayerInput, action.payload] };
+    case 'SIMON_RESET':
+      return { ...state, simonPlayerInput: [] };
+    case 'ENTER_ARIA_CODE': {
+      return { ...state, stage: STAGES.FALSE_VICTORY, ariaCodeEntered: true };
+    }
+
+    // Protocol 7
+    case 'PROTOCOL_7_ATTEMPT':
+      return {
+        ...state,
+        cakeAttempted: true,
+        chatQueue: [...state.chatQueue, ...DIALOGUE_TREE.protocol7_apex_reaction],
+      };
+
+    // RILEY_UNBOUND
+    case 'ENTER_RILEY_UNBOUND':
+      return {
+        ...state,
+        stage: STAGES.RILEY_UNBOUND,
+        nexusFirstSeen: true,
+        themeName: 'riley_unbound',
+        chatQueue: [...DIALOGUE_TREE.riley_unbound_monologue],
+        chatMode: 'sidebar',
+        rileyDead: false, // she speaks again, one last time
+      };
+
+    // Tools
+    case 'FIND_TOOL': {
+      if (state.toolsFound.includes(action.payload)) return state;
+      const chatEvent = DIALOGUE_TREE[`found_tool_${action.payload}`];
+      return {
+        ...state,
+        toolsFound: [...state.toolsFound, action.payload],
+        ...(chatEvent && !state.rileyDead ? { chatQueue: [...state.chatQueue, ...chatEvent] } : {}),
+      };
+    }
+
+    // Handbook notes
+    case 'ADD_HANDBOOK_NOTE': {
+      if (state.handbookNotes.some(n => n.id === action.payload.id)) return state;
+      return { ...state, handbookNotes: [...state.handbookNotes, action.payload] };
+    }
+
+    // Aria / legacy logs
+    case 'SET_ARIA_REVEALED':
+      return { ...state, ariaRevealed: true };
+    case 'UNLOCK_LEGACY_LOGS':
+      return { ...state, legacyLogsUnlocked: true };
+
+    // Tracking counters
+    case 'INCREMENT_BACKEND_PATCH':
+      return { ...state, backendPatchCount: state.backendPatchCount + 1 };
+    case 'INCREMENT_ARCHIVED':
+      return { ...state, archivedEntities: state.archivedEntities + 1 };
 
     case 'NEW_GAME':
       return { ...initialState, targetVibeColor: getRandomColor(), chatQueue: [...DIALOGUE_TREE.intro_1] };

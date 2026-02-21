@@ -54,4 +54,26 @@ export const initialState = {
   isTyping: false,
   unreadChat: 0,
   rileyDead: false,
+
+  // ── Boss Fight (reset each encounter via PLAYER_HIT → 0 HP) ─────────────────
+  bossPhase: 0,           // 0=none, 1=power shield, 2=processing core, 3=root access
+  playerHP: 10,
+  hosesConnected: [true, true],
+  nodeClickSequence: [],
+  valvePercent: 100,
+  simonSequence: [],
+  simonPlayerInput: [],
+  ghostProtocolEntered: false,
+  ariaCodeEntered: false,
+
+  // ── Roguelike Persistence (survives DO_GASLIGHT_RESET) ───────────────────────
+  apexEncounters: 0,      // how many times player has entered the boss
+  toolsFound: [],         // collected tool IDs
+  handbookNotes: [],      // accumulated notes: { id, style, text }
+  ariaRevealed: false,    // true when rapport 10 OR legacy_logs read
+  cakeAttempted: false,   // true after Protocol 7 button used
+  legacyLogsUnlocked: false,
+  backendPatchCount: 0,   // counts APPLY_PATCH successes across all loops
+  archivedEntities: 0,    // counts entity eliminations in SubstrateSimulation
+  nexusFirstSeen: false,  // true after RILEY_UNBOUND — enables post-game content
 };
