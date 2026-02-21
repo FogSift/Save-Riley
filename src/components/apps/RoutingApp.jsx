@@ -252,6 +252,12 @@ export default function RoutingApp() {
   const buyUpgrade = (id) => {
     dispatch({ type: 'BUY_UPGRADE', payload: id });
     if (id === 'god') dispatch({ type: 'TRIGGER_EGG', payload: 'created_god' });
+    // Button Masher unlocks after all 6 upgrades purchased
+    const ALL_UPGRADES = ['cpu', 'thread', 'quantum', 'universe', 'god', 'cthulhu'];
+    const afterPurchase = [...state.purchasedUpgrades, id];
+    if (ALL_UPGRADES.every(u => afterPurchase.includes(u)) && !state.toolsFound.includes('button_masher')) {
+      dispatch({ type: 'FIND_TOOL', payload: 'button_masher' });
+    }
   };
 
   const popPacket = () => dispatch({ type: 'TRIGGER_EGG', payload: 'packet_pop' });

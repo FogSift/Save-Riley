@@ -221,6 +221,7 @@ function Phase2Panel({ state, dispatch }) {
   const hasFogSifter = toolsFound.includes('fog_sifter');
   const hasHandbookTool = toolsFound.includes('handbook_tool');
   const [scrambled, setScrambled] = useState(false);
+  const [wrongFlash, setWrongFlash] = useState(false);
 
   // Scramble attack every 12s unless fog_sifter
   useEffect(() => {
@@ -260,6 +261,8 @@ function Phase2Panel({ state, dispatch }) {
     if (lastWrong) {
       dispatch({ type: 'RESET_NODE_SEQUENCE' });
       globalEvents.emit('JITTER', 400);
+      setWrongFlash(true);
+      setTimeout(() => setWrongFlash(false), 600);
     }
   }, [lastWrong, dispatch]);
 
@@ -318,7 +321,7 @@ function Phase2Panel({ state, dispatch }) {
             {hasHandbookTool && <span className="text-yellow-400"> 📖 Sequence shown.</span>}
             {scrambled && <span className="text-red-400 animate-pulse"> SCRAMBLED!</span>}
           </div>
-          <div className="relative mx-auto" style={{ width: 180, height: 80 }}>
+          <div className={`relative mx-auto rounded transition-all duration-100 ${wrongFlash ? 'ring-2 ring-red-500 bg-red-500/10' : ''}`} style={{ width: 180, height: 80 }}>
             {NODE_POSITIONS.map((pos, i) => {
               const label = i + 1;
               const clickedIdx = seq.indexOf(i);
@@ -462,7 +465,6 @@ function Phase3Panel({ state, dispatch }) {
                 key={i}
                 onClick={() => handleSwitch(i)}
                 disabled={showingSeq || simonDone}
-                style={{ '--sw-color': switchColors[i] }}
                 className={`w-12 h-16 rounded flex flex-col items-center justify-center font-mono text-lg font-black border-2 transition-all select-none ${
                   hilightIdx === i
                     ? 'opacity-100 shadow-[0_0_20px_var(--sw-color)] scale-105'

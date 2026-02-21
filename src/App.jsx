@@ -166,6 +166,19 @@ export default function App() {
     }
   }, [state.themeClicks, state.loopCount, state.rileyDead, state.toolsFound]);
 
+  // ── Tool unlock thresholds ────────────────────────────────────────────────
+  useEffect(() => {
+    if (state.archivedEntities >= 8 && !state.toolsFound.includes('fog_sifter')) {
+      dispatch({ type: 'FIND_TOOL', payload: 'fog_sifter' });
+    }
+  }, [state.archivedEntities, state.toolsFound]);
+
+  useEffect(() => {
+    if (state.backendPatchCount >= 3 && !state.toolsFound.includes('thingifier')) {
+      dispatch({ type: 'FIND_TOOL', payload: 'thingifier' });
+    }
+  }, [state.backendPatchCount, state.toolsFound]);
+
   // ── Rapport-gated Riley vulnerability lines ───────────────────────────────
   const lastRapportRef = useRef(state.rapport);
   useEffect(() => {

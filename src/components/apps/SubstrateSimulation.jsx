@@ -8,6 +8,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useOS } from '../../context/OSContext';
+import { STAGES } from '../../constants/stages';
 
 // ── Physics constants ─────────────────────────────────────────────────────────
 const REPULSION    = 4200;
@@ -40,7 +41,18 @@ class SimulationState {
       aggression: Math.random(),
       volatility: Math.random(),
       alive:      true,
+      protected:  false,
     }));
+    // W.RABBIT — always present, never eliminated, never bonds, never clashes
+    this.entities.push({
+      id:         count,
+      name:       'W.RABBIT',
+      relevance:  1.0,
+      aggression: 0,
+      volatility: 0,
+      alive:      true,
+      protected:  true,
+    });
     this.vectors = [];
     // Seed some initial relationships
     for (let i = 0; i < count; i++) {
@@ -56,6 +68,7 @@ class SimulationState {
   }
 
   alive() { return this.entities.filter(e => e.alive); }
+  mortal() { return this.entities.filter(e => e.alive && !e.protected); }
 
   advanceTick() {
     this.tick++;
@@ -68,10 +81,11 @@ class SimulationState {
     }
 
     // Random event
+    const mortal = this.mortal();
     const roll = Math.random();
-    if (roll < 0.12) this._bond(live);
-    else if (roll < 0.22) this._clash(live);
-    else if (roll < 0.26 && live.length > 4) this._eliminate(live);
+    if (roll < 0.12) this._bond(mortal);
+    else if (roll < 0.22) this._clash(mortal);
+    else if (roll < 0.26 && mortal.length > 4) this._eliminate(mortal);
     else if (roll < 0.32) this._paranoia(live);
   }
 
@@ -232,8 +246,8 @@ function useCanvasGraph(canvasRef, sim) {
         n.vy *= DAMPING;
         n.vx = Math.max(-12, Math.min(12, n.vx));
         n.vy = Math.max(-12, Math.min(12, n.vy));
-        n.x  = Math.max(30, Math.min(W - 30, n.x + n.vx));
-        n.y  = Math.max(30, Math.min(H - 30, n.y + n.vy));
+        n.x  = Math.max(30, Math.min(W - 30, n.x + n.vx * DRAG));
+        n.y  = Math.max(30, Math.min(H - 30, n.y + n.vy * DRAG));
       }
 
       // ── Draw vectors ────────────────────────────────────────────────────────
@@ -259,8 +273,25 @@ function useCanvasGraph(canvasRef, sim) {
       for (const n of ns) {
         const entity = sim.entities.find(e => e.id === n.id);
         if (!entity || !entity.alive) continue;
-        const r = 8 + entity.relevance * 10;
-        const color = entity.volatility > 0.7 ? '#FF0055' : entity.relevance > 0.8 ? '#39FF14' : '#00F0FF';
+
+        // W.RABBIT: special render — white square, never colored red
+        if (entity.protected) {
+          const size = 12;
+          ctx.save();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 800) * 0.3;
+          ctx.strokeRect(n.x - size / 2, n.y - size / 2, size, size);
+          ctx.font = 'bold 8px monospace';
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.fillText('W.RABBIT', n.x, n.y + size + 10);
+          ctx.restore();
+          continue;
+        }
+
+        const r = entity.isNexus ? 18 : 8 + entity.relevance * 10;
+        const color = entity.isNexus ? '#ff0000' : entity.volatility > 0.7 ? '#FF0055' : entity.relevance > 0.8 ? '#39FF14' : '#00F0FF';
 
         // Glow
         ctx.save();
@@ -324,7 +355,8 @@ function useCanvasGraph(canvasRef, sim) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function SubstrateSimulation() {
-  const { enqueueLog } = useOS();
+  const { enqueueLog, dispatch, state } = useOS();
+  const nexusFirstSeen = state?.nexusFirstSeen ?? false;
   const canvasRef = useRef(null);
   const simRef    = useRef(null);
   const [, forceUpdate] = useState(0);
@@ -332,8 +364,23 @@ export default function SubstrateSimulation() {
   const [liveCount, setLiveCount] = useState(0);
 
   // Initialise simulation once
-  if (!simRef.current) simRef.current = new SimulationState(14);
+  if (!simRef.current) simRef.current = new SimulationState(12);
   const sim = simRef.current;
+
+  // Post-game transformation: W.RABBIT gone, NEXUS appears
+  useEffect(() => {
+    if (!nexusFirstSeen) return;
+    const rabbit = sim.entities.find(e => e.name === 'W.RABBIT');
+    if (rabbit) rabbit.alive = false;
+    const hasNexus = sim.entities.find(e => e.name === 'NEXUS');
+    if (!hasNexus) {
+      const nexusId = sim.entities.length;
+      sim.entities.push({
+        id: nexusId, name: 'NEXUS', relevance: 1.0,
+        aggression: 1.0, volatility: 0.9, alive: true, protected: false, isNexus: true,
+      });
+    }
+  }, [nexusFirstSeen, sim]);
 
   // Canvas physics
   useCanvasGraph(canvasRef, sim);
@@ -348,13 +395,16 @@ export default function SubstrateSimulation() {
         setEventLog(prev => [...newEvts, ...prev].slice(0, 20));
         setLiveCount(sim.alive().length);
         for (const ev of newEvts) {
-          if (ev.type === 'eliminate') enqueueLog(`SUBSTRATE: ${ev.text}`);
+          if (ev.type === 'eliminate') {
+            enqueueLog(`SUBSTRATE: ${ev.text}`);
+            dispatch({ type: 'INCREMENT_ARCHIVED' });
+          }
         }
       }
       forceUpdate(n => n + 1);
     }, EVENT_MS);
     return () => clearInterval(id);
-  }, [sim, enqueueLog]);
+  }, [sim, enqueueLog, dispatch]);
 
   // Paranoia injection
   useEffect(() => {

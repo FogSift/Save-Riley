@@ -25,6 +25,10 @@ export default function HardwareApp() {
       dispatch({ type: 'ACHIEVE_RESONANCE' });
       enqueueLog('SUCCESS: OSCILLATOR SYNCHRONIZED. BIOMETRIC HANDSHAKE REQUIRED.');
       dispatch({ type: 'SET_ACTIVE_APP', payload: 'HANDSHAKE' });
+      // Resonance Key: requires exact tune + rapport >= 5
+      if (state.rapport >= 5 && !state.toolsFound?.includes('resonance_key')) {
+        dispatch({ type: 'FIND_TOOL', payload: 'resonance_key' });
+      }
     } else {
       enqueueLog('ERROR: RESONANCE MISMATCH. Ensure frequency is exactly 432 Hz.');
       globalEvents.emit('JITTER', 300);

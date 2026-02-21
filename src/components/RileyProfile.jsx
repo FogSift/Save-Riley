@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { User, X, Skull } from 'lucide-react';
 import { STAGES } from '../constants/stages';
 import { DIALOGUE_TREE } from '../constants/dialogue';
@@ -5,6 +6,13 @@ import { useOS } from '../context/OSContext';
 
 export default function RileyProfile() {
   const { state, dispatch } = useOS();
+  // White Rabbit: supervisor field flashes "THE WHITE RABBIT" for one frame on open
+  const [supervisor, setSupervisor] = useState('THE WHITE RABBIT');
+  useEffect(() => {
+    const t = setTimeout(() => setSupervisor('A.P.E.X. Systems'), 80);
+    return () => clearTimeout(t);
+  }, []);
+
   if (!state.isProfileOpen) return null;
 
   const handleDecommission = () => {
@@ -47,6 +55,7 @@ export default function RileyProfile() {
           {[
             ['Employee ID',       '000-000-001'],
             ['Department',        'Human Capital\nContainment'],
+            ['Supervisor',        supervisor],
             ['Operators Managed', '991 (100% Turnover)'],
             ['Biological Req.',   'Verified Invalid'],
           ].map(([label, value]) => (
