@@ -6,6 +6,11 @@ An interactive browser-based narrative puzzle game / ARG built with React. You p
 
 **[Fork it →](https://github.com/FogSift/Save-Riley/fork)** · **[Vision Board →](./vision.html)** · **[FogSift Organization →](https://github.com/FogSift)**
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Built with React](https://img.shields.io/badge/Built%20with-React%2018-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Bundled%20with-Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
+[![No backend](https://img.shields.io/badge/Backend-None-brightgreen)](https://github.com/FogSift/Save-Riley)
+
 ---
 
 ## What is this?
@@ -21,6 +26,8 @@ Save Riley is a fully client-side game designed to be **forked, hacked, and remi
 - **Mini-Games**: bit-flip parity puzzle · resonance oscillator tuner · biometric handshake hold · Vibe IDE hex editor · data routing idle/clicker · backend config editor
 - **Themes** — Default, Dark, Light, Neon, and a secret Hostile mode
 - **Easter Eggs** — rapid-click detection, handbook scratch reveal, packet popping, diagnostic port, and more
+- **Persistent Save State** — game auto-saves to `localStorage` on every action; resume exactly where you left off
+- **Mod Console** — press `Ctrl+Shift+D` to open a live debug panel with stage jump, rapport tracking, and new-game reset
 - **Mobile-responsive** with portrait-mode guard
 
 ---
@@ -40,6 +47,8 @@ No external state libraries. The entire game runs on `useReducer` + React Contex
 
 ## Getting Started
 
+**Prerequisites:** Node.js 18+ and npm.
+
 ```bash
 git clone https://github.com/FogSift/Save-Riley.git
 cd Save-Riley
@@ -49,11 +58,31 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) and follow Riley's instructions.
 
+> The dev server has hot module reload — edit any file in `src/` and the browser updates instantly without losing game state.
+
+To ship a production build:
+
+```bash
+npm run build   # outputs to dist/
+```
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+| -------- | ------ |
+| `Ctrl+Shift+D` | Toggle the mod/debug console |
+
+The mod console shows: current stage name and number, rapport score, loop count, routing cycles, currency, every choice the player has made, one-click buttons to jump to any of the 12 FSM stages, and a "New Game (Clear Save)" button.
+
+> **For modders:** game state is stored in `localStorage` under the key `riley-save`. Open DevTools → Application → Local Storage to inspect or edit it directly.
+
 ---
 
 ## Project Structure
 
-```
+```text
 src/
 ├── App.jsx                    # Main OS shell — layout, effects, FSM reactions
 ├── main.jsx                   # Entry point
@@ -146,26 +175,26 @@ Edit `src/constants/themes.js`. Each theme is a flat map of CSS custom propertie
 
 ---
 
+## Recently Shipped
+
+| Feature | Description |
+| ------- | ----------- |
+| **Persistent save state** | Game auto-saves to `localStorage` on every dispatch; resumes on next visit |
+| **Mod console** (`Ctrl+Shift+D`) | Live debug panel: stage jump, rapport, choices, new-game reset |
+| **`NEW_GAME` action** | Clean FSM reset dispatched by the console; safe to call from any mod |
+| **Vision board** | `vision.html` — standalone roadmap page with integrations and use cases |
+| **MIT License** | Open for forks, derivatives, and commercial use |
+
+---
+
 ## What to Build Next
 
 These are the highest-leverage additions — roughly ordered from "do this weekend" to "start a company around it."
 
 ### 🟢 Low-hanging fruit (hours)
 
-**Save state with localStorage**
-The entire game state is a single plain JS object. Persist it on every dispatch:
-
-```js
-// in App.jsx, after useReducer:
-useEffect(() => {
-  localStorage.setItem('riley-save', JSON.stringify(state));
-}, [state]);
-```
-
-Load it back on mount and players can close the tab without losing progress.
-
 **Sound design**
-Every `globalEvents.emit('JITTER')` call, every bit flip, every Riley message could trigger a sound. A small Web Audio API oscillator or a few `.mp3` samples would transform the atmosphere completely.
+Every `globalEvents.emit('JITTER')` call, every bit flip, every Riley message could trigger a sound. A small Web Audio API oscillator or a few `.mp3` samples would transform the atmosphere completely. The `EventManager` pub/sub is already wired — just subscribe to `JITTER` and play a tone.
 
 **Deploy to Vercel / Netlify / GitHub Pages**
 `npm run build` already produces a `dist/` folder. One `vercel --prod` away from a shareable link. Add a real URL to the README and the `<title>` tag.
@@ -173,8 +202,8 @@ Every `globalEvents.emit('JITTER')` call, every bit flip, every Riley message co
 **More dialogue branches**
 The dialogue tree is the cheapest content to add. Every `nextNode` that currently closes the chat could instead spiral into a new branch. Riley has 991 previous operators — any of them could have left something behind.
 
-**A debug / mod console**
-Add a hidden keyboard shortcut (e.g., `Ctrl+Shift+D`) that opens a panel showing current stage, rapport score, user choices, and buttons to jump to any stage. Invaluable for modders and testers.
+**Shareable endings URLs**
+Append `?end=gaslight` or `?end=escape` to the URL and jump directly to an ending state on load. One `useEffect` reading `URLSearchParams`, one `dispatch({ type: 'SET_STAGE' })`. Great for screenshots and sharing.
 
 ---
 
@@ -236,6 +265,27 @@ Hide real URLs, real emails, real Discord servers inside the handbook's scratch-
 **Use it as an ARG campaign.** Build a real marketing campaign around it. Leak "internal FogSift documents" on Reddit. Have Riley's email respond to people who find it. Let the fiction escape the browser.
 
 **Use it to prototype AI companion interactions.** The dialogue system — with rapport, skill checks, branching, gaslighting — is a solid skeleton for any game that needs a character who feels like they have an agenda.
+
+---
+
+## Easter Eggs
+
+> **Spoiler warning.** These are the known discoverable events — useful for testing with the mod console, or for players who want to find them all.
+
+| Trigger | How | Riley's response |
+| ------- | --- | ---------------- |
+| **Slow Down** | Click anywhere 10+ times within 1 second | Riley tells you to relax |
+| **Handbook Scratch** | Click the blacked-out text in the Handbook 3 times | Reveals hidden lore |
+| **Packet Pop** | Click the animated data packet in the Routing app | Riley notices |
+| **Diagnostic Port** | Click the hidden port in the Hardware app | Riley gets weird about it |
+| **Wrong Color** | Enter `#000000` in the Vibe IDE | Special reaction |
+| **Theme Snoop 1** | Switch themes once | Riley comments |
+| **Theme Snoop 2** | Switch themes 5 times | Riley gets suspicious |
+| **Created God** | Purchase the Cthulhu upgrade in the Substrate Marketplace | Existential dialogue |
+| **Profile Breach** | Open Riley's profile during early stages | Triggers a confrontation |
+| **Decommission** | Hit the decommission button in Riley's profile | Triggers a breach or death scene depending on stage |
+
+All easter eggs are tracked in `state.easterEggs` and player choices are logged in `state.userChoices`. Use the mod console (`Ctrl+Shift+D`) to inspect them in real time.
 
 ---
 
