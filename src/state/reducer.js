@@ -272,6 +272,9 @@ export function osReducer(state, action) {
         logs: ['SYSTEM OVERRIDE SUCCESSFUL.', 'RILEY.EXE PURGED FROM SUBSTRATE.', 'WELCOME, ARCHITECT.'],
       };
 
+    case 'NEW_GAME':
+      return { ...initialState, targetVibeColor: getRandomColor(), chatQueue: [...DIALOGUE_TREE.intro_1] };
+
     default:
       return state;
   }

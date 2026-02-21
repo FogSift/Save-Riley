@@ -26,10 +26,16 @@ import FrontendApp  from './components/apps/FrontendApp';
 import HandbookApp  from './components/apps/HandbookApp';
 
 export default function App() {
-  const [state, dispatch] = useReducer(osReducer, initialState);
+  const [state, dispatch] = useReducer(osReducer, null, () => {
+    try {
+      const raw = localStorage.getItem('riley-save');
+      return raw ? { ...initialState, ...JSON.parse(raw) } : initialState;
+    } catch { return initialState; }
+  });
   const [logQueue, setLogQueue]   = useState([]);
   const [isPortrait, setIsPortrait] = useState(false);
   const [isJittering, setIsJittering] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
   const prevStage = useRef(state.stage);
 
   // ── Rapid-click easter egg ───────────────────────────────────────────────
@@ -195,6 +201,23 @@ export default function App() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  // ── Persist game state to localStorage ───────────────────────────────────
+  useEffect(() => {
+    try { localStorage.setItem('riley-save', JSON.stringify(state)); } catch {}
+  }, [state]);
+
+  // ── Debug / mod console (Ctrl+Shift+D) ───────────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        setDebugOpen(d => !d);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   // ── App registry ─────────────────────────────────────────────────────────
   const APPS = useMemo(() => ({
     FRONTEND:  { icon: <Globe size={18} />,        label: 'Client UI',   component: <FrontendApp /> },
@@ -358,6 +381,68 @@ export default function App() {
             </div>
           )}
         </main>
+
+        {/* ── Debug / Mod Console ─────────────────────────────────────────── */}
+        {debugOpen && (
+          <div className="fixed inset-0 z-[9999] flex items-start justify-end p-4 pointer-events-none">
+            <div className="pointer-events-auto w-72 bg-black border-2 border-[var(--accent)] rounded-xl shadow-2xl font-mono text-xs text-[var(--accent)] overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2 bg-[var(--accent)] text-black font-black uppercase tracking-widest text-[10px]">
+                <span>// MOD CONSOLE</span>
+                <button onClick={() => setDebugOpen(false)}>✕</button>
+              </div>
+              <div className="p-4 space-y-4 overflow-y-auto max-h-[80vh]">
+
+                <div className="space-y-1">
+                  <div className="text-[var(--dim)] uppercase tracking-widest text-[9px]">State</div>
+                  <div>Stage: <span className="text-white">{Object.keys(STAGES).find(k => STAGES[k] === state.stage)} ({state.stage})</span></div>
+                  <div>Rapport: <span className="text-white">{state.rapport}</span></div>
+                  <div>Loop: <span className="text-white">{state.loopCount}</span></div>
+                  <div>Cycles: <span className="text-white">{state.routingCycles}</span></div>
+                  <div>Currency: <span className="text-white">{state.currency}</span></div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-[var(--dim)] uppercase tracking-widest text-[9px]">Choices Made</div>
+                  {state.userChoices.length === 0
+                    ? <div className="text-[var(--dim)] italic">none yet</div>
+                    : state.userChoices.map((c, i) => <div key={i} className="text-white">· {c}</div>)
+                  }
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-[var(--dim)] uppercase tracking-widest text-[9px]">Jump to Stage</div>
+                  <div className="grid grid-cols-2 gap-1">
+                    {Object.entries(STAGES).map(([name, val]) => (
+                      <button
+                        key={name}
+                        onClick={() => dispatch({ type: 'SET_STAGE', payload: val })}
+                        className={`px-2 py-1 rounded text-[9px] font-bold transition-colors ${state.stage === val ? 'bg-[var(--accent)] text-black' : 'bg-[var(--panel)] text-[var(--text)] hover:bg-[var(--dim-30)]'}`}
+                      >
+                        {name.replace(/_/g, ' ')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-[var(--dim)] uppercase tracking-widest text-[9px]">Actions</div>
+                  <button
+                    onClick={() => {
+                      try { localStorage.removeItem('riley-save'); } catch {}
+                      dispatch({ type: 'NEW_GAME' });
+                      setDebugOpen(false);
+                    }}
+                    className="w-full px-2 py-1.5 bg-[var(--alert)] text-white rounded text-[9px] font-bold uppercase tracking-widest hover:opacity-80 transition-opacity"
+                  >
+                    New Game (Clear Save)
+                  </button>
+                  <div className="text-[var(--dim)] text-[9px] text-center pt-1">Ctrl+Shift+D to toggle</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Footer dock ──────────────────────────────────────────────────── */}
         <footer className="bg-[var(--bg)] border-t border-[var(--dim)] px-4 py-3 shrink-0 flex justify-center z-50 transition-colors">
