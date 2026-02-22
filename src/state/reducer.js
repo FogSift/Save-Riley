@@ -187,10 +187,16 @@ export function osReducer(state, action) {
     case 'SELECT_CHAT_OPTION': {
       const option = action.payload;
       const nextSequence = DIALOGUE_TREE[option.nextNode] || [];
-      const newRapport = state.rapport + (option.rapportBoost || 0);
+      const boost = option.rapportBoost || 0;
+      const newRapport = state.rapport + boost;
+      // Karma accumulates the raw rapportBoost direction across all loops.
+      // Positive karma → player was consistently kind → Theory B (Riley as victim).
+      // Negative/zero karma → player was suspicious/resistant → Theory A (Riley as villain).
+      const newKarma = (state.karma || 0) + boost;
       return {
         ...state,
         rapport: newRapport,
+        karma: newKarma,
         chatMessages: [...state.chatMessages, { sender: 'Operator', text: option.text }],
         userChoices: [...state.userChoices, option.choiceId],
         chatOptions: [],
@@ -246,6 +252,7 @@ export function osReducer(state, action) {
       // Fields that persist through every reset (roguelike knowledge)
       const persist = {
         rapport:            state.rapport,
+        karma:              state.karma,
         userChoices:        state.userChoices,
         hasSeenSlowDown:    state.hasSeenSlowDown,
         toolsFound:         state.toolsFound,

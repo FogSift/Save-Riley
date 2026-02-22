@@ -268,6 +268,95 @@ export function resistApexAttack(state, bossPhase) {
     : rollCheck('equipment', stats, dc);
 }
 
+// ── Karma polarity ───────────────────────────────────────────────────────────
+
+/**
+ * Read the karma field (persisted through loops) to determine which Riley
+ * the player has been cultivating.
+ *
+ * Theory A (villain):  karma ≤ DAMSEL_THRESHOLD
+ * Theory B (damsel):   karma >  DAMSEL_THRESHOLD
+ *
+ * Threshold is intentionally low — a few genuine moments of empathy tip the
+ * balance. Players who were mostly neutral trend villain. Players who actively
+ * tried to connect trend damsel. Both are valid playthroughs.
+ */
+export const DAMSEL_THRESHOLD = 3;
+
+export function karmaPolar(state) {
+  return (state.karma || 0) > DAMSEL_THRESHOLD ? 'damsel' : 'villain';
+}
+
+/**
+ * Return the correct boss intro dialogue key based on karma polarity.
+ */
+export function bossIntroNode(state) {
+  return karmaPolar(state) === 'damsel' ? 'boss_intro_damsel' : 'boss_intro_villain';
+}
+
+// ── Fate dimension (WAFT AESTHETIC port) ─────────────────────────────────────
+
+/**
+ * Fate is a deterministic modifier (0.0–1.0) based on what the player has
+ * actually done — loops survived, rapport earned, secrets found.
+ * Borrowed from WAFT's LUCK_AND_FATE.md: aesthetic = (luck * 0.7) + (fate * 0.3)
+ *
+ * A player who has been paying attention has better fate. Not better luck.
+ * Fate compounds with luck on the roll.
+ */
+export function computeFate(state) {
+  let fate = 0;
+  if ((state.loopCount || 0) >= 1)       fate += 0.1;  // survived a reset
+  if ((state.rapport   || 0) >= 5)       fate += 0.15; // built genuine rapport
+  if ((state.ariaRevealed))              fate += 0.2;  // found the truth
+  if ((state.calibratedFreqs || []).length >= 2) fate += 0.1; // heard the music
+  if ((state.toolsFound || []).length >= 4)      fate += 0.1; // found the tools
+  return Math.min(fate, 1.0);
+}
+
+/**
+ * Roll a d20 weighted by the WAFT aesthetic formula.
+ * Fate (what you've earned) adds a small but real bonus to every roll.
+ *
+ * @param {string} stat
+ * @param {object} stats - from buildStats(state)
+ * @param {number} dc
+ * @param {object} state - raw game state (for fate computation)
+ */
+export function rollCheckWithFate(stat, stats, dc = DIFFICULTY.STANDARD, state = {}) {
+  const luck = Math.floor(Math.random() * 20) + 1;  // d20
+  const fate = computeFate(state);
+  // Aesthetic value = 70% luck + 30% fate — normalized back to d20 range
+  const aestheticBonus = Math.round(fate * 0.3 * 4); // fate can add up to +1.2 ≈ +1
+  const modifier = stats[stat] ?? 0;
+  const total = luck + modifier + aestheticBonus;
+  const critical = luck === 20;
+  const fumble   = luck === 1 && aestheticBonus === 0; // fate can save a fumble
+  const success  = critical || (!fumble && total >= dc);
+
+  let tier;
+  if (critical)       tier = 'critical';
+  else if (fumble)    tier = 'fumble';
+  else if (success && total >= dc + 5) tier = 'strong';
+  else if (success)   tier = 'success';
+  else if (total >= dc - 3)            tier = 'near';
+  else                tier = 'fail';
+
+  return {
+    roll: luck,
+    modifier,
+    fateBonus: aestheticBonus,
+    total,
+    stat,
+    dc,
+    success,
+    critical,
+    fumble,
+    tier,
+    label: `[ROLL ${luck}${modifier !== 0 ? (modifier > 0 ? '+'+modifier : modifier) : ''}${aestheticBonus > 0 ? '+'+aestheticBonus+'✦' : ''} vs DC ${dc} = ${total} — ${tier.toUpperCase()}]`,
+  };
+}
+
 // ── Debug ────────────────────────────────────────────────────────────────────
 
 /**

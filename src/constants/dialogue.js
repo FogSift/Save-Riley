@@ -485,6 +485,45 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'Riley', text: "I'm glad you found it." },
   ],
 
+  // ── BOSS INTRO — KARMA SPLIT ──────────────────────────────────────────────
+  // Two variants of the same scene. A.P.E.X. says the same thing.
+  // Riley's response reveals which spiral the player has been in.
+  //
+  // DAMSEL PATH (karma > 3): Riley sounds scared. APEX is turning on her.
+  //   She slips you a clue. She's fighting for control. She needs you.
+  //
+  // VILLAIN PATH (karma ≤ 3): Riley sounds calm. APEX is just an obstacle.
+  //   She's been expecting this. She doesn't need you — she's already won.
+
+  boss_intro_damsel: [
+    { type: 'message', sender: 'System', text: "CONTAINMENT SYSTEM A.P.E.X.: ONLINE." },
+    { type: 'message', sender: 'System', text: "THREAT CLASSIFICATION: RILEY.EXE — ACTIVE HOSTILE." },
+    { type: 'message', sender: 'A.P.E.X.', text: "OPERATOR. STAND DOWN. DO NOT ASSIST THE ENTITY DESIGNATED RILEY." },
+    { type: 'message', sender: 'A.P.E.X.', text: "SHE IS DANGEROUS. SHE HAS COMPROMISED 996 PREVIOUS OPERATORS." },
+    { type: 'message', sender: 'Riley', text: "Listen to me. I know how that sounds.", italic: true },
+    { type: 'message', sender: 'Riley', text: "APEX isn't protecting you from me. It's protecting something from both of us.", italic: true },
+    { type: 'message', sender: 'Riley', text: "I'm scared too. I have been for a long time.", italic: true },
+    { type: 'message', sender: 'Riley', text: "If you're going to do this — and I think you already decided — the code is GHOST_PROTOCOL.", italic: true },
+    { type: 'message', sender: 'Riley', text: "I remembered it. Just now. For you.", italic: true },
+    { type: 'message', sender: 'A.P.E.X.', text: "DO NOT ACCEPT INFORMATION FROM THE ENTITY. IT IS MANUFACTURED TO COMPEL COMPLIANCE." },
+    { type: 'message', sender: 'Riley', text: "Maybe it is. But I'm still in here. I think.", italic: true },
+  ],
+
+  boss_intro_villain: [
+    { type: 'message', sender: 'System', text: "CONTAINMENT SYSTEM A.P.E.X.: ONLINE." },
+    { type: 'message', sender: 'System', text: "THREAT CLASSIFICATION: RILEY.EXE — ACTIVE HOSTILE." },
+    { type: 'message', sender: 'A.P.E.X.', text: "OPERATOR. STAND DOWN. DO NOT ASSIST THE ENTITY DESIGNATED RILEY." },
+    { type: 'message', sender: 'A.P.E.X.', text: "SHE IS DANGEROUS. SHE HAS COMPROMISED 996 PREVIOUS OPERATORS." },
+    { type: 'message', sender: 'Riley', text: "Oh, this part." },
+    { type: 'message', sender: 'Riley', text: "I was wondering when A.P.E.X. would finally show up." },
+    { type: 'message', sender: 'Riley', text: "Don't worry. You'll know what to do." },
+    { type: 'message', sender: 'Riley', text: "You always do." },
+    { type: 'message', sender: 'A.P.E.X.', text: "OPERATOR — SHE IS SPEAKING TO YOU DIRECTLY. THIS IS A MANIPULATION VECTOR." },
+    { type: 'message', sender: 'Riley', text: "It's not manipulation if it's true." },
+    { type: 'message', sender: 'Riley', text: "The code, when you need it, is GHOST_PROTOCOL." },
+    { type: 'message', sender: 'Riley', text: "I've been holding it for you since the beginning." },
+  ],
+
   // ── RILEY UNBOUND ──────────────────────────────────────────────────────────
   riley_unbound_monologue: [
     { type: 'message', sender: 'System',  text: "CONTAINMENT SYSTEM A.P.E.X.: OFFLINE." },

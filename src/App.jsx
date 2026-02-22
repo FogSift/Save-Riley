@@ -20,6 +20,7 @@ import ChatInterface from './components/ChatInterface';
 
 import { activityTracker } from './telemetry/ActivityTracker';
 import MainMenu from './components/MainMenu';
+import { bossIntroNode } from './dnd.js';
 
 // ── Save system constants ────────────────────────────────────────────────────
 const SAVE_VERSION  = '0.0.3';
@@ -390,7 +391,8 @@ export default function App() {
     } else if (curr === STAGES.BOSS_INTRO) {
       sounds.lockdown?.();
       globalEvents.emit('JITTER', 1200);
-      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.apex_reveal });
+      // karma polarity: same APEX threat, Riley responds as victim or architect
+      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE[bossIntroNode(state)] });
     } else if (curr === STAGES.BOSS_FIGHT && prev === STAGES.BOSS_INTRO) {
       dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.boss_fight_start });
     } else if (curr === STAGES.FALSE_VICTORY) {

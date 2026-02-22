@@ -68,6 +68,7 @@ export const initialState = {
   ariaCodeEntered: false,
 
   // ── Roguelike Persistence (survives DO_GASLIGHT_RESET) ───────────────────────
+  karma: 0,               // net sum of all rapportBoosts; shapes villain vs. damsel Riley
   apexEncounters: 0,      // how many times player has entered the boss
   toolsFound: [],         // collected tool IDs
   handbookNotes: [],      // accumulated notes: { id, style, text }
