@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![Built with React](https://img.shields.io/badge/Built%20with-React%2018-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![No backend](https://img.shields.io/badge/Backend-None-brightgreen)](https://github.com/FogSift/Save-Riley)
-[![Version](https://img.shields.io/badge/version-0.1.1-orange)](https://github.com/FogSift/Save-Riley/releases)
+[![Version](https://img.shields.io/badge/version-0.1.2-orange)](https://github.com/FogSift/Save-Riley/releases)
 
 ---
 
@@ -597,7 +597,7 @@ Neither theory is confirmed. The game ends before you know. That's the ending.
 
 ## Roadmap
 
-### v0.1.0 (current)
+### v0.1.0
 
 - `fogsift-init.cjs` — repo-reading CLI that generates a populated `fogsift.config.js`
 - `fogsift.config.js` — shipped default config; app reads `project.name` into boot logs
@@ -605,11 +605,19 @@ Neither theory is confirmed. The game ends before you know. That's the ending.
 - **Live Claude API as Riley's brain** — `riley.brain: 'claude'` + API key → streaming haiku responses between plot beats
 - DnD skill check system — `dnd.js` + hooks in dialogue + boss fight integration
 
-### v0.1.1 (next)
+### v0.1.1
 
-- **Mouse dynamics surveillance** — ActivityTracker records movement speed, trajectory curvature, hesitation zones. A.P.E.X. reacts to detected emotional state during boss fight. GhostMonitor renders behavioral heatmap.
-- **Ghost replay on loop** — when `loopCount >= 1`, a faint trail of the player's previous-loop mouse path overlays the screen. The world resets. The ghost doesn't.
-- **Resonance Cascade** — properly gate 528 Hz behind prerequisite frequencies. Trigger: screen corruption, A.P.E.X. delivers "you've been extracting yourself" speech, player's own session trajectory replays as "the ghost trapped in the system."
+- **Mouse dynamics surveillance** — `ActivityTracker.analyzeBehavior()` classifies player movement as calm/hesitant/anxious/erratic
+- **A.P.E.X. behavioral warfare** — 20 profile-matched taunts injected every 15-25s during boss fight; A.P.E.X. reacts to *how* you move, not just what you do
+
+### v0.1.2 (current)
+
+- **Main menu redesign** — full TUI terminal (type commands to navigate) with visual hero section: ASCII title art, action pills, last-session status. Screenshottable and shareable.
+
+### v0.1.3 (next)
+
+- **The "Don't engage the breaker" secret path** — Riley is locked out of the boiler room and urgently pressuring you. What if you ignore her? Track detours, escalate her urgency, unlock a `maintenance` terminal command after 2+ diversions. New stage: `MAINTENANCE_SHAFT`. New ending: `OPERATOR_ESCAPED`. W.RABBIT is already there. You leave before APEX ever activates.
+- **Vibe IDE overhaul** — the tab becomes the game's deepest rabbit hole: 5 scripted vibe-coding tutorial lessons (typewriter animation), free in-browser AI via `transformers.js` (no API key, runs on WebGPU), and a `CLASSIFIED WORKSTATION` tier gated behind API key with full safety warnings. Riley interrupts you after 90 seconds like a real coworker.
 
 ### Medium-term
 
