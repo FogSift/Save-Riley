@@ -269,7 +269,7 @@ export function osReducer(state, action) {
           chatMode: 'modal',
           isProfileOpen: false,
           chatQueue: [...DIALOGUE_TREE.intro_loop_1],
-          logs: ['BOOT: FOGSIFT_OS_v5.3_REVISION', 'MEMORY PURGED.', 'AWAITING OPERATOR.'],
+          logs: ['BOOT: FOGSIFT_OS_v5.3_REVISION', 'OPERATOR_INSTANCE: #0997 — REINITIALIZING', 'MEMORY PURGED.', 'AWAITING OPERATOR.'],
         };
       }
       return {

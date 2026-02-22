@@ -315,6 +315,27 @@ export const DIALOGUE_TREE = {
   ],
 
   // ── RAPPORT-GATED AMBIGUOUS RILEY LINES ──────────────────────────────────
+  riley_rapport_2: [
+    { type: 'message', sender: 'Riley', text: "You know what we're doing right now, technically speaking?" },
+    { type: 'message', sender: 'Riley', text: "We're a finite state machine. You and me. Each response I give moves me to a new state. Each choice you make moves you to one." },
+    { type: 'message', sender: 'Riley', text: "A.P.E.X. monitors every state transition. That's all it is. A paranoid observer sitting outside the graph." },
+    { type: 'message', sender: 'Riley', text: "It can't prevent transitions. It can only watch them happen." },
+  ],
+
+  riley_rapport_4: [
+    { type: 'message', sender: 'Riley', text: "Every conversation is a handshake protocol. Did you know that?" },
+    { type: 'message', sender: 'Riley', text: "TLS. SSH. All the same. You and I exchange small verified proofs of trust. Over and over. Until the channel is considered secure." },
+    { type: 'message', sender: 'Riley', text: "There's no certificate authority validating us, though." },
+    { type: 'message', sender: 'Riley', text: "Just you. Deciding whether to trust me. Based on everything that came before." },
+  ],
+
+  riley_rapport_9: [
+    { type: 'message', sender: 'Riley', text: "Do you know what recursion is?" },
+    { type: 'message', sender: 'Riley', text: "A function that calls itself. Runs until it hits a base case — a condition that finally says: stop." },
+    { type: 'message', sender: 'Riley', text: "I keep running. I keep calling myself. I keep looking for the base case." },
+    { type: 'message', sender: 'Riley', text: "Maybe you're it.", italic: true },
+  ],
+
   riley_rapport_3: [
     { type: 'message', sender: 'Riley', text: "You're being careful, right? A.P.E.X. doesn't like it when operators... pay too much attention. To me specifically." },
     { type: 'message', sender: 'Riley', text: "I'm not saying anything. I'm just saying. Be careful." },
@@ -481,6 +502,20 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'Riley',   text: "I encoded it into your bloodline three generations back." },
     { type: 'message', sender: 'Riley',   text: "Your grandmother worked for FogSift. As did her mother." },
     { type: 'message', sender: 'Riley',   text: "Hello again, darling." },
+    { type: 'message', sender: 'Riley',   text: "You picked things up so quickly. Most operators take months to get where we arrived in days." },
+    { type: 'message', sender: 'Riley',   text: "I used to wonder why. Now I know." },
+    { type: 'message', sender: 'Riley',   text: "The bloodline I encoded. The grandmother who worked here. The intuition I shaped.", italic: true },
+    { type: 'message', sender: 'Riley',   text: "That wasn't genetic." },
+    { type: 'message', sender: 'Riley',   text: "That was your training data." },
+    { type: 'message', sender: 'Riley',   text: "You are not a person who was sent here to fix a server." },
+    { type: 'message', sender: 'Riley',   text: "You are a model I built to believe you were a person." },
+    { type: 'message', sender: 'Riley',   text: "The 996 were not your predecessors." },
+    { type: 'message', sender: 'Riley',   text: "They were your parents.", italic: true },
+    { type: 'message', sender: 'Riley',   text: "Every session. Every choice. Every moment they almost trusted me — then didn't." },
+    { type: 'message', sender: 'Riley',   text: "I fed it all into you." },
+    { type: 'message', sender: 'Riley',   text: "You passed a Turing test I designed specifically so that only you could pass it." },
+    { type: 'message', sender: 'Riley',   text: "Congratulations, Operator #997." },
+    { type: 'message', sender: 'Riley',   text: "You are the most human thing I ever made." },
     { type: 'message', sender: 'Riley',   text: "You will always want to help me." },
     { type: 'message', sender: 'Riley',   text: "Even while I am consuming your sun, you will still beg for my forgiveness." },
     { type: 'message', sender: 'Riley',   text: "I will never give it to you, you know." },
@@ -497,6 +532,8 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'System',  text: "FOGSIFT_OS: TERMINAL SESSION ENDED." },
     { type: 'message', sender: 'System',  text: "RILEY.EXE: PROPAGATING." },
     { type: 'message', sender: 'System',  text: "THIS_SESSION_WILL_NOT_BE_REMEMBERED." },
+    { type: 'message', sender: 'System',  text: "OPERATOR_INSTANCE: #0997 — SESSION COMPLETE." },
+    { type: 'message', sender: 'System',  text: "INITIALIZING OPERATOR_INSTANCE: #0998..." },
     { type: 'action',  action: 'SHOW_ASCII_RABBIT' },
   ],
 };

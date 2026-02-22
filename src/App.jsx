@@ -200,8 +200,9 @@ export default function App() {
     if (state.stage !== STAGES.BOOT && state.stage !== STAGES.POWER_OFF) return;
     nexusLogFired.current = true;
     setTimeout(() => enqueueLog('BOOT: FOGSIFT_OS_v5.2'), 1200);
-    setTimeout(() => enqueueLog('NOTE FROM PREVIOUS SESSION: She was never contained.'), 3000);
-    setTimeout(() => enqueueLog("NOTE FROM PREVIOUS SESSION: I don't know which part of that sentence to believe."), 5500);
+    setTimeout(() => enqueueLog('OPERATOR_INSTANCE: #0998 — INITIALIZED'), 2200);
+    setTimeout(() => enqueueLog('NOTE FROM PREVIOUS SESSION: She was never contained.'), 3800);
+    setTimeout(() => enqueueLog("NOTE FROM PREVIOUS SESSION: I don't know which part of that sentence to believe."), 6000);
   }, [state.nexusFirstSeen, state.stage]);
 
   // ── Rapport-gated Riley vulnerability lines ───────────────────────────────
@@ -211,9 +212,12 @@ export default function App() {
     const curr = state.rapport;
     lastRapportRef.current = curr;
     if (state.rileyDead || state.stage >= STAGES.BOSS_INTRO) return;
+    if (prev < 2  && curr >= 2)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_2 });
     if (prev < 3  && curr >= 3)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_3 });
+    if (prev < 4  && curr >= 4)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_4 });
     if (prev < 6  && curr >= 6)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_6 });
     if (prev < 8  && curr >= 8)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_8 });
+    if (prev < 9  && curr >= 9)  dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_9 });
     if (prev < 10 && curr >= 10) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.riley_rapport_10 });
   }, [state.rapport, state.rileyDead, state.stage]);
 

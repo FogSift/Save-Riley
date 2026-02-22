@@ -28,6 +28,7 @@ export const initialState = {
   isTerminalOpen: false,
   logs: [
     'BOOT: FOGSIFT_OS_v5.2',
+    'OPERATOR_INSTANCE: #0997 — INITIALIZED',
     'SYSTEM HEALTH: CRITICAL.',
     'ERROR: NO POWER DETECTED IN PRIMARY BUS.',
   ],

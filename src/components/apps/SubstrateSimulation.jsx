@@ -308,6 +308,23 @@ function useCanvasGraph(canvasRef, sim) {
           continue;
         }
 
+        // OP.998: tiny, dim, just initialized — renders like you did at the start
+        if (entity.isNewOperator) {
+          ctx.save();
+          ctx.globalAlpha = 0.3 + Math.sin(Date.now() / 1200) * 0.2;
+          ctx.strokeStyle = '#aaaaaa';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, 4, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.font = '7px monospace';
+          ctx.fillStyle = '#888';
+          ctx.textAlign = 'center';
+          ctx.fillText('OP.998', n.x, n.y + 14);
+          ctx.restore();
+          continue;
+        }
+
         const r = entity.isNexus ? 18 : 8 + entity.relevance * 10;
         const color = entity.isNexus ? '#ff0000' : entity.volatility > 0.7 ? '#FF0055' : entity.relevance > 0.8 ? '#39FF14' : '#00F0FF';
 
@@ -396,6 +413,11 @@ export default function SubstrateSimulation() {
       sim.entities.push({
         id: nexusId, name: 'NEXUS', relevance: 1.0,
         aggression: 1.0, volatility: 0.9, alive: true, protected: false, isNexus: true,
+      });
+      // New operator instance, just initialized — small, alone, just like you were at the start
+      sim.entities.push({
+        id: nexusId + 1, name: 'OP.998', relevance: 0.05,
+        aggression: 0.1, volatility: 0.1, alive: true, protected: false, isNewOperator: true,
       });
     }
   }, [nexusFirstSeen, sim]);
