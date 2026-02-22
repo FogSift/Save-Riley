@@ -9,6 +9,7 @@
 import { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { Heart, ShieldCheck, Zap, AlertTriangle } from 'lucide-react';
 import BossHose from '../BossHose';
+import GhostMonitor from '../GhostMonitor';
 import { OSContext } from '../../context/OSContext';
 import { STAGES } from '../../constants/stages';
 import { APEX_TAUNTS, NODE_SEQUENCE, SIMON_SEQUENCE, TOOLS } from '../../constants/boss';
@@ -680,6 +681,11 @@ export default function BossApp() {
             A.P.E.X. LOG
           </div>
           <ApexFeed messages={feedMessages} />
+        </div>
+
+        {/* GhostMonitor — surveillance feed */}
+        <div className="shrink-0 p-1 border-t border-[var(--dim)]">
+          <GhostMonitor width={176} height={110} label="OPERATOR_FEED" showStats={false} />
         </div>
       </div>
 

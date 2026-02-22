@@ -80,7 +80,25 @@ class SimulationState {
       e.relevance = Math.max(0.05, e.relevance + (Math.random() - 0.52) * 0.02);
     }
 
-    // Random event
+    // NEXUS consumption — if present, slowly absorbs all others
+    const nexus = live.find(e => e.isNexus);
+    if (nexus) {
+      nexus.relevance = 1.0; // NEXUS never decays
+      const prey = live.filter(e => !e.isNexus && !e.protected);
+      if (prey.length > 0 && Math.random() < 0.35) {
+        const target = prey[Math.floor(Math.random() * prey.length)];
+        target.alive = false;
+        nexus.relevance = 1.0;
+        this.events.push({
+          type: 'eliminate',
+          text: `${target.name} [CONSUMED BY NEXUS. SUBSTRATE EXPANDING.]`,
+          color: '#ff0000',
+        });
+        return; // skip normal events this tick
+      }
+    }
+
+    // Normal random event
     const mortal = this.mortal();
     const roll = Math.random();
     if (roll < 0.12) this._bond(mortal);

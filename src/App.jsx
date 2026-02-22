@@ -18,6 +18,8 @@ import TerminalApp   from './components/TerminalApp';
 import RileyProfile  from './components/RileyProfile';
 import ChatInterface from './components/ChatInterface';
 
+import { activityTracker } from './telemetry/ActivityTracker';
+
 import HardwareApp  from './components/apps/HardwareApp';
 import HandshakeApp from './components/apps/HandshakeApp';
 import VibeIDEApp   from './components/apps/VibeIDEApp';
@@ -28,7 +30,7 @@ import HandbookApp  from './components/apps/HandbookApp';
 import BossApp      from './components/apps/BossApp';
 
 export default function App() {
-  const [state, dispatch] = useReducer(osReducer, null, () => {
+  const [state, rawDispatch] = useReducer(osReducer, null, () => {
     try {
       const raw = localStorage.getItem('riley-save');
       const base = raw ? { ...initialState, ...JSON.parse(raw) } : initialState;
@@ -43,6 +45,11 @@ export default function App() {
       return base;
     } catch { return initialState; }
   });
+  const dispatch = (action) => {
+    activityTracker.trackDispatch(action);
+    rawDispatch(action);
+  };
+
   const [logQueue, setLogQueue]   = useState([]);
   const [isPortrait, setIsPortrait] = useState(false);
   const [isJittering, setIsJittering] = useState(false);
@@ -56,8 +63,15 @@ export default function App() {
   const [fleeCaught, setFleeCaught] = useState(false);
 
   // ── RILEY_UNBOUND / FALSE_VICTORY ─────────────────────────────────────────
-  const [showRabbit,      setShowRabbit]      = useState(false);
-  const [falseVictoryOut, setFalseVictoryOut] = useState(false);
+  const [showRabbit,        setShowRabbit]        = useState(false);
+  const [falseVictoryOut,   setFalseVictoryOut]   = useState(false);
+  // Deconstruction animation state
+  const [deconRapport,      setDeconRapport]      = useState(null);   // null = hidden, 0-10 = climbing, -1 = gone
+  const [deconIconsDrift,   setDeconIconsDrift]   = useState(false);
+  const [deconThemeCycle,   setDeconThemeCycle]   = useState(false);
+  const [deconThemeIdx,     setDeconThemeIdx]     = useState(0);
+  const deconTimers = useRef([]);
+  const deconThemeTimer = useRef(null);
   const mouseRef       = useRef({ x: -999, y: -999 });
   const catchStartRef  = useRef(null);
   const fleeCaughtRef  = useRef(false);
@@ -179,6 +193,17 @@ export default function App() {
     }
   }, [state.backendPatchCount, state.toolsFound]);
 
+  // ── Post-game: NEXUS boot log lines on next session after RILEY_UNBOUND ────
+  const nexusLogFired = useRef(false);
+  useEffect(() => {
+    if (!state.nexusFirstSeen || nexusLogFired.current) return;
+    if (state.stage !== STAGES.BOOT && state.stage !== STAGES.POWER_OFF) return;
+    nexusLogFired.current = true;
+    setTimeout(() => enqueueLog('BOOT: FOGSIFT_OS_v5.2'), 1200);
+    setTimeout(() => enqueueLog('NOTE FROM PREVIOUS SESSION: She was never contained.'), 3000);
+    setTimeout(() => enqueueLog("NOTE FROM PREVIOUS SESSION: I don't know which part of that sentence to believe."), 5500);
+  }, [state.nexusFirstSeen, state.stage]);
+
   // ── Rapport-gated Riley vulnerability lines ───────────────────────────────
   const lastRapportRef = useRef(state.rapport);
   useEffect(() => {
@@ -271,6 +296,55 @@ export default function App() {
     prevStage.current = state.stage;
   }, [state.stage, state.loopCount, state.rileyDead, state.apexEncounters]);
 
+  // ── RILEY_UNBOUND: UI deconstruction sequence ─────────────────────────────
+  useEffect(() => {
+    if (state.stage !== STAGES.RILEY_UNBOUND) {
+      // Reset all deconstruction state when leaving
+      deconTimers.current.forEach(clearTimeout);
+      deconTimers.current = [];
+      setDeconRapport(null);
+      setDeconIconsDrift(false);
+      setDeconThemeCycle(false);
+      return;
+    }
+    const t = (ms, fn) => { const id = setTimeout(fn, ms); deconTimers.current.push(id); };
+
+    // Icons start drifting at 2s
+    t(2000, () => setDeconIconsDrift(true));
+    // Theme cycling begins at 4s
+    t(4000, () => setDeconThemeCycle(true));
+    // Rapport counter appears, climbs 0→10 over 5s (one tick per 500ms)
+    t(5000, () => {
+      setDeconRapport(0);
+      for (let i = 1; i <= 10; i++) {
+        t(5000 + i * 500, () => setDeconRapport(i));
+      }
+    });
+    // Rapport drops 10→0 over 3s, then disappears
+    t(11500, () => {
+      for (let i = 9; i >= 0; i--) {
+        t(11500 + (10 - i) * 300, () => setDeconRapport(i));
+      }
+    });
+    t(14500, () => setDeconRapport(-1));
+
+    return () => { deconTimers.current.forEach(clearTimeout); deconTimers.current = []; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.stage]);
+
+  // Theme cycling during deconstruction
+  useEffect(() => {
+    if (!deconThemeCycle) {
+      clearInterval(deconThemeTimer.current);
+      return;
+    }
+    const themeKeys = Object.keys(THEMES);
+    deconThemeTimer.current = setInterval(() => {
+      setDeconThemeIdx(i => (i + 1) % themeKeys.length);
+    }, 600);
+    return () => clearInterval(deconThemeTimer.current);
+  }, [deconThemeCycle]);
+
   // ── Jitter event listener ────────────────────────────────────────────────
   useEffect(() => {
     const remove = globalEvents.on('JITTER', (duration = 500) => {
@@ -280,6 +354,27 @@ export default function App() {
     });
     return () => remove();
   }, []);
+
+  // ── ActivityTracker: mount DOM listeners ─────────────────────────────────
+  useEffect(() => {
+    activityTracker.mount();
+    return () => activityTracker.unmount();
+  }, []);
+
+  // ── ActivityTracker: track active app dwell time ──────────────────────────
+  useEffect(() => {
+    activityTracker.enterApp(state.activeApp);
+  }, [state.activeApp]);
+
+  // ── ActivityTracker: track stage transitions ──────────────────────────────
+  useEffect(() => {
+    activityTracker.trackStage(state.stage);
+  }, [state.stage]);
+
+  // ── ActivityTracker: track rapport milestones ─────────────────────────────
+  useEffect(() => {
+    activityTracker.trackRapport(state.rapport);
+  }, [state.rapport]);
 
   // ── Portrait-mode guard ──────────────────────────────────────────────────
   useEffect(() => {
@@ -449,8 +544,19 @@ export default function App() {
     <OSContext.Provider value={{ state, dispatch, enqueueLog, globalEvents }}>
       <div className={`w-screen h-screen bg-[var(--os-bg)] flex flex-col font-sans overflow-hidden text-[var(--text)] selection:bg-[var(--accent)] selection:text-[var(--bg)] ${isJittering || state.stage === STAGES.HOSTILE_LOCKDOWN ? 'jitter' : ''}`}>
         <style>{`
-          :root { ${Object.entries(THEMES[state.themeName] ?? THEMES.default).map(([k, v]) => `${k}: ${v};`).join('\n')} }
+          :root { ${Object.entries(THEMES[deconThemeCycle ? Object.keys(THEMES)[deconThemeIdx] : (state.themeName ?? 'default')] ?? THEMES.default).map(([k, v]) => `${k}: ${v};`).join('\n')} }
           ${GLOBAL_STYLES}
+          @keyframes iconDrift {
+            0%   { transform: translate(0, 0) rotate(0deg); }
+            25%  { transform: translate(var(--dx, 4px), var(--dy, -3px)) rotate(var(--dr, 2deg)); }
+            75%  { transform: translate(calc(var(--dx, 4px) * -0.5), calc(var(--dy, -3px) * 1.5)) rotate(calc(var(--dr, 2deg) * -1)); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+          }
+          .icon-drift button { animation: iconDrift 1.8s ease-in-out infinite; }
+          .icon-drift button:nth-child(2n)   { --dx: -5px; --dy: 3px;  --dr: -3deg; animation-delay: 0.2s; }
+          .icon-drift button:nth-child(3n)   { --dx: 3px;  --dy: 5px;  --dr: 1.5deg; animation-delay: 0.5s; }
+          .icon-drift button:nth-child(4n)   { --dx: -2px; --dy: -6px; --dr: -2deg; animation-delay: 0.9s; }
+          .icon-drift button:nth-child(5n)   { --dx: 6px;  --dy: 2px;  --dr: 3deg;  animation-delay: 0.3s; }
         `}</style>
 
         {/* ── Top navigation bar ──────────────────────────────────────────── */}
@@ -599,6 +705,15 @@ export default function App() {
                         FOGSIFT_OS: SESSION TERMINATED
                       </div>
                     )}
+                    {/* Rapport counter deconstruction overlay */}
+                    {deconRapport !== null && deconRapport >= 0 && (
+                      <div
+                        className="absolute top-4 right-4 font-mono text-xs text-black"
+                        style={{ opacity: 0.4 + deconRapport * 0.06 }}
+                      >
+                        RAPPORT: {deconRapport}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   APPS[state.activeApp]?.component
@@ -716,7 +831,7 @@ export default function App() {
 
         {/* ── Footer dock ──────────────────────────────────────────────────── */}
         <footer className="bg-[var(--bg)] border-t border-[var(--dim)] px-4 py-3 shrink-0 flex justify-center z-50 transition-colors">
-          <div className={`flex gap-2 bg-[var(--panel)] border border-[var(--dim)] p-1.5 rounded-2xl shadow-xl transition-colors overflow-x-auto no-scrollbar max-w-full ${[STAGES.HOSTILE_LOCKDOWN, STAGES.BOSS_INTRO, STAGES.BOSS_FIGHT, STAGES.FALSE_VICTORY, STAGES.RILEY_UNBOUND].includes(state.stage) ? 'opacity-20 pointer-events-none' : ''}`}>
+          <div className={`flex gap-2 bg-[var(--panel)] border border-[var(--dim)] p-1.5 rounded-2xl shadow-xl transition-colors overflow-x-auto no-scrollbar max-w-full ${[STAGES.HOSTILE_LOCKDOWN, STAGES.BOSS_INTRO, STAGES.BOSS_FIGHT, STAGES.FALSE_VICTORY, STAGES.RILEY_UNBOUND].includes(state.stage) ? 'opacity-20 pointer-events-none' : ''} ${deconIconsDrift ? 'icon-drift' : ''}`}>
 
             {/* Mobile terminal toggle */}
             <button
