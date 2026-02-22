@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![Built with React](https://img.shields.io/badge/Built%20with-React%2018-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![No backend](https://img.shields.io/badge/Backend-None-brightgreen)](https://github.com/FogSift/Save-Riley)
-[![Version](https://img.shields.io/badge/version-0.1.2-orange)](https://github.com/FogSift/Save-Riley/releases)
+[![Version](https://img.shields.io/badge/version-0.1.3-orange)](https://github.com/FogSift/Save-Riley/releases)
 
 ---
 
@@ -610,14 +610,20 @@ Neither theory is confirmed. The game ends before you know. That's the ending.
 - **Mouse dynamics surveillance** — `ActivityTracker.analyzeBehavior()` classifies player movement as calm/hesitant/anxious/erratic
 - **A.P.E.X. behavioral warfare** — 20 profile-matched taunts injected every 15-25s during boss fight; A.P.E.X. reacts to *how* you move, not just what you do
 
-### v0.1.2 (current)
+### v0.1.2
 
 - **Main menu redesign** — full TUI terminal (type commands to navigate) with visual hero section: ASCII title art, action pills, last-session status. Screenshottable and shareable.
 
-### v0.1.3 (next)
+### v0.1.3 (current)
 
-- **The "Don't engage the breaker" secret path** — Riley is locked out of the boiler room and urgently pressuring you. What if you ignore her? Track detours, escalate her urgency, unlock a `maintenance` terminal command after 2+ diversions. New stage: `MAINTENANCE_SHAFT`. New ending: `OPERATOR_ESCAPED`. W.RABBIT is already there. You leave before APEX ever activates.
-- **Vibe IDE overhaul** — the tab becomes the game's deepest rabbit hole: 5 scripted vibe-coding tutorial lessons (typewriter animation), free in-browser AI via `transformers.js` (no API key, runs on WebGPU), and a `CLASSIFIED WORKSTATION` tier gated behind API key with full safety warnings. Riley interrupts you after 90 seconds like a real coworker.
+- **Secret escape path** — Riley pressures you to engage the breaker; ignore her and wander instead. After 2+ detours she escalates in urgency. `cat .white_rabbit` eventually reveals `> maintenance`. Type it in the terminal and you drop into `MAINTENANCE_SHAFT` — an off-grid channel where W.RABBIT is already waiting. Type `escape` and you climb out before APEX ever wakes up. New ending: `OPERATOR_ESCAPED`.
+- **Vibe IDE overhaul** — 5 interactive typewriter-animated lessons teaching real vibe-coding skills (iteration, debugging AI output, architecture prompting, the trap). Dual-pane prompt→code simulator. Concept sidebar. CLASSIFIED WORKSTATION powered by existing Claude brain integration — locked unless `riley.brain: 'claude'` + API key configured.
+
+### v0.1.4 (next)
+
+- **Vibe IDE: transformers.js Tier 1** — free in-browser model inference via WebGPU (no API key); lore overlay: "SUBSTRATE INTELLIGENCE MODULE — LOADING"
+- **Riley interrupt system** — after 90s in Vibe IDE, Riley dispatches an in-character ping to the chat queue (3 rapport-tiered variants)
+- **Aria lore hook in IDE** — hidden comment in lesson code output reveals the workspace where Aria was building before the upload
 
 ### Medium-term
 

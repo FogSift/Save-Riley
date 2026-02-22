@@ -14,7 +14,9 @@ export const STAGES = {
   BOSS_INTRO:      12,
   BOSS_FIGHT:      13,
   FALSE_VICTORY:   14,
-  RILEY_UNBOUND:   15,
+  RILEY_UNBOUND:     15,
+  MAINTENANCE_SHAFT: 16,
+  OPERATOR_ESCAPED:  17,
 };
 
 export const VIBE_COLORS = ['#00F0FF', '#FF0055', '#39FF14', '#BC13FE'];

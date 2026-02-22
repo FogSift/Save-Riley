@@ -40,6 +40,7 @@ export const initialState = {
   radarClicks: 0,
   loopCount: 0,
   rapport: 0,
+  breakerIgnored: 0,      // non-HARDWARE app visits before breaker engaged
   hasSeenSlowDown: false,
 
   // Easter Egg Tracking

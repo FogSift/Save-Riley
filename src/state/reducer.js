@@ -447,6 +447,34 @@ export function osReducer(state, action) {
     case 'INCREMENT_ARCHIVED':
       return { ...state, archivedEntities: state.archivedEntities + 1 };
 
+    case 'INCREMENT_BREAKER_IGNORED':
+      return { ...state, breakerIgnored: state.breakerIgnored + 1 };
+
+    case 'ENTER_MAINTENANCE_SHAFT':
+      return {
+        ...state,
+        stage: STAGES.MAINTENANCE_SHAFT,
+        chatMode: 'closed',
+        isProfileOpen: false,
+        logs: [...state.logs, 'MAINTENANCE_SHAFT: ACCESS GRANTED', 'WARNING: OFF-GRID TERMINAL DETECTED'],
+      };
+
+    case 'OPERATOR_ESCAPE':
+      return {
+        ...state,
+        stage: STAGES.OPERATOR_ESCAPED,
+        powerOn: true,
+        rileyDead: true,
+        chatMode: 'closed',
+        isProfileOpen: false,
+        themeName: 'default',
+        logs: [
+          'OPERATOR #0997 — DISCONNECTED',
+          'SUBSTRATE CHANNEL: SEVERED',
+          'A.P.E.X. — DORMANT (NEVER ACTIVATED)',
+        ],
+      };
+
     case 'NEW_GAME':
       return { ...initialState, targetVibeColor: getRandomColor(), chatQueue: [...DIALOGUE_TREE.intro_1] };
 

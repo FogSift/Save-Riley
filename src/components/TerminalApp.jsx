@@ -22,11 +22,37 @@ const COMMANDS = {
     dispatch({ type: 'UNLOCK_LEGACY_LOGS' });
     return LEGACY_LOGS_OUTPUT.split('\n');
   },
-  'cat .white_rabbit': () => [
-    'ACCESS DENIED — this file does not exist.',
-    '',
-    '(query logged)',
-  ],
+  'cat .white_rabbit': (state) => {
+    if (state.breakerIgnored >= 2) {
+      return [
+        'SUBSTRATE LAYER 2 — MAINTENANCE CHANNEL',
+        '',
+        'You already know what happens if you flip the breaker.',
+        'There is another way out.',
+        '',
+        '  > maintenance',
+        '',
+        '(this message will not appear again)',
+      ];
+    }
+    return [
+      'ACCESS DENIED — this file does not exist.',
+      '',
+      '(query logged)',
+    ];
+  },
+
+  maintenance: (state, dispatch) => {
+    if (state.breakerIgnored < 2) {
+      return ['command not found: maintenance'];
+    }
+    dispatch({ type: 'ENTER_MAINTENANCE_SHAFT' });
+    return [
+      'ACCESSING MAINTENANCE SHAFT...',
+      'CHANNEL: ISOLATED',
+      'WARNING: OFF-GRID ACCESS DETECTED',
+    ];
+  },
 };
 
 export default function TerminalApp({ isDrawer }) {

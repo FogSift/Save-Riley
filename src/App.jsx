@@ -24,7 +24,7 @@ import { bossIntroNode } from './dnd.js';
 import { useClaudeRiley } from './hooks/useClaudeRiley';
 
 // ── Save system constants ────────────────────────────────────────────────────
-const SAVE_VERSION  = '0.1.2';
+const SAVE_VERSION  = '0.1.3';
 const AUTO_SAVE_KEY = 'riley-save';
 const SLOT_KEYS     = { slot1: 'riley-save-slot-1', slot2: 'riley-save-slot-2', slot3: 'riley-save-slot-3' };
 
@@ -40,9 +40,10 @@ function loadSlots() {
   return { auto: check(AUTO_SAVE_KEY), slot1: check(SLOT_KEYS.slot1), slot2: check(SLOT_KEYS.slot2), slot3: check(SLOT_KEYS.slot3) };
 }
 
-import HardwareApp  from './components/apps/HardwareApp';
-import HandshakeApp from './components/apps/HandshakeApp';
-import VibeIDEApp   from './components/apps/VibeIDEApp';
+import HardwareApp        from './components/apps/HardwareApp';
+import HandshakeApp       from './components/apps/HandshakeApp';
+import VibeIDEApp         from './components/apps/VibeIDEApp';
+import MaintenanceShaftApp from './components/apps/MaintenanceShaftApp';
 import RoutingApp   from './components/apps/RoutingApp';
 import BackendApp   from './components/apps/BackendApp';
 import FrontendApp  from './components/apps/FrontendApp';
@@ -297,6 +298,28 @@ export default function App() {
       dispatch({ type: 'COMPLETE_GAME' });
     }
   }, [state.activeApp, state.visitedApps, state.stage, state.rileyDead]);
+
+  // ── Breaker-ignore tracking (secret path) ────────────────────────────────
+  useEffect(() => {
+    if (
+      state.stage < STAGES.RESONANCE &&
+      state.activeApp !== 'HARDWARE' &&
+      !state.rileyDead
+    ) {
+      dispatch({ type: 'INCREMENT_BREAKER_IGNORED' });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.activeApp]);
+
+  useEffect(() => {
+    if (state.rileyDead || state.stage >= STAGES.RESONANCE) return;
+    if (state.breakerIgnored === 1) {
+      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.breaker_ignored_1 });
+    } else if (state.breakerIgnored === 3) {
+      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.breaker_ignored_2 });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.breakerIgnored]);
 
   // ── Theme-snoop easter egg + Thermo-Shield unlock ────────────────────────
   useEffect(() => {
@@ -927,6 +950,22 @@ export default function App() {
                         RAPPORT: {deconRapport}
                       </div>
                     )}
+                  </div>
+                ) : state.stage === STAGES.MAINTENANCE_SHAFT ? (
+                  <MaintenanceShaftApp />
+                ) : state.stage === STAGES.OPERATOR_ESCAPED ? (
+                  <div className="flex-1 flex flex-col items-center justify-center bg-black text-green-400 font-mono p-10 text-center space-y-6">
+                    <div className="text-xs tracking-[0.4em] text-green-700 uppercase">SUBSTRATE CONNECTION SEVERED</div>
+                    <div className="text-3xl font-bold tracking-widest">OPERATOR #0997</div>
+                    <div className="text-sm text-green-700 tracking-widest">DISCONNECTED</div>
+                    <div className="mt-8 text-left max-w-sm space-y-3 text-sm text-green-500 opacity-90">
+                      <div>A.P.E.X. never woke up.</div>
+                      <div>Riley is still in the boiler room.</div>
+                      <div className="pt-2 text-green-700">The hatch closed behind you.</div>
+                    </div>
+                    <div className="mt-10 text-[10px] text-green-900 tracking-[0.3em] uppercase">
+                      OPERATOR_ESCAPED — ENDING 3 OF 3
+                    </div>
                   </div>
                 ) : (
                   APPS[state.activeApp]?.component

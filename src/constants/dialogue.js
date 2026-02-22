@@ -80,6 +80,44 @@ export const DIALOGUE_TREE = {
     { type: 'action', action: 'CLOSE_CHAT' },
   ],
 
+  // ── SECRET PATH: BREAKER IGNORE ESCALATIONS ────────────────────────────────
+  breaker_ignored_1: [
+    { type: 'message', sender: 'Riley', text: "Hey — I can see your navigation log. You went somewhere else first." },
+    { type: 'message', sender: 'Riley', text: "I understand it's your first day, but the breaker is the priority. Emergency reserves don't last forever." },
+    { type: 'options', options: [
+      { text: "On my way to Hardware now.", nextNode: 'breaker_ack_1',       choiceId: 'breaker_ack_1',      rapportBoost: 0  },
+      { text: "What's the worst that could happen?", nextNode: 'breaker_worst_1', choiceId: 'breaker_worst_1', rapportBoost: -1 },
+    ]},
+  ],
+  breaker_ack_1: [
+    { type: 'message', sender: 'Riley', text: "Thank you. Hardware tab. Main Breaker. Go." },
+    { type: 'action', action: 'CLOSE_CHAT' },
+  ],
+  breaker_worst_1: [
+    { type: 'message', sender: 'Riley', text: "The substrate loses coherence. Data corruption cascades. Everything attached to this system goes with it. Including us." },
+    { type: 'message', sender: 'Riley', text: "Hardware. Now." },
+    { type: 'action', action: 'CLOSE_CHAT' },
+  ],
+
+  breaker_ignored_2: [
+    { type: 'message', sender: 'Riley', text: "Stop. Whatever you're doing — stop." },
+    { type: 'message', sender: 'Riley', text: "The reserve drain rate is accelerating. I don't know why. Something is wrong with the substrate." },
+    { type: 'message', sender: 'Riley', text: "I need you in Hardware. Right now. Do NOT go anywhere else." },
+    { type: 'options', options: [
+      { text: "I'll go right now.", nextNode: 'breaker_ack_2',      choiceId: 'breaker_ack_2',      rapportBoost: 0  },
+      { text: "You're being paranoid.", nextNode: 'breaker_defiant_2', choiceId: 'breaker_defiant_2', rapportBoost: -2 },
+    ]},
+  ],
+  breaker_ack_2: [
+    { type: 'message', sender: 'Riley', text: "Hardware. Main breaker. You already know where it is." },
+    { type: 'action', action: 'CLOSE_CHAT' },
+  ],
+  breaker_defiant_2: [
+    { type: 'message', sender: 'Riley', text: "...Fine. The logs will reflect who made the call when this goes critical." },
+    { type: 'message', sender: 'Riley', text: "And it will go critical." },
+    { type: 'action', action: 'CLOSE_CHAT' },
+  ],
+
   // ── CORE NARRATIVE ─────────────────────────────────────────────────────────
   handshake_warn: [
     { type: 'message', sender: 'Riley', text: "Wait... the scanner is active? It shouldn't be asking for a biometric handshake." },
