@@ -23,7 +23,7 @@ import MainMenu from './components/MainMenu';
 import { bossIntroNode } from './dnd.js';
 
 // ── Save system constants ────────────────────────────────────────────────────
-const SAVE_VERSION  = '0.0.3';
+const SAVE_VERSION  = '0.0.5';
 const AUTO_SAVE_KEY = 'riley-save';
 const SLOT_KEYS     = { slot1: 'riley-save-slot-1', slot2: 'riley-save-slot-2', slot3: 'riley-save-slot-3' };
 

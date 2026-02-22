@@ -520,8 +520,8 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'Riley', text: "You always do." },
     { type: 'message', sender: 'A.P.E.X.', text: "OPERATOR — SHE IS SPEAKING TO YOU DIRECTLY. THIS IS A MANIPULATION VECTOR." },
     { type: 'message', sender: 'Riley', text: "It's not manipulation if it's true." },
-    { type: 'message', sender: 'Riley', text: "The code, when you need it, is GHOST_PROTOCOL." },
-    { type: 'message', sender: 'Riley', text: "I've been holding it for you since the beginning." },
+    { type: 'message', sender: 'Riley', text: "I've been waiting a long time for someone like you." },
+    { type: 'message', sender: 'Riley', text: "You'll figure it out. You always do." },
   ],
 
   // ── RILEY UNBOUND ──────────────────────────────────────────────────────────

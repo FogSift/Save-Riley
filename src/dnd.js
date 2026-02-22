@@ -100,50 +100,40 @@ export function buildStats(state) {
 
 /**
  * Roll a d20 and return a detailed result object.
+ * Pass `state` to apply the fate bonus (WAFT aesthetic formula).
  *
- * @param {string} stat - 'charisma' | 'equipment' | 'experience' | 'intuition'
+ * @param {string} stat  - 'charisma' | 'equipment' | 'experience' | 'intuition'
  * @param {object} stats - from buildStats(state)
- * @param {number} dc - difficulty class (use DIFFICULTY constants)
+ * @param {number} dc    - difficulty class (use DIFFICULTY constants)
+ * @param {object|null} state - raw game state; if provided, fate bonus is applied
  * @returns {CheckResult}
  */
-export function rollCheck(stat, stats, dc = DIFFICULTY.STANDARD) {
-  const d20 = Math.floor(Math.random() * 20) + 1;
+export function rollCheck(stat, stats, dc = DIFFICULTY.STANDARD, state = null) {
+  const d20      = Math.floor(Math.random() * 20) + 1;
   const modifier = stats[stat] ?? 0;
-  const total = d20 + modifier;
+  // fate: 0–1.0 → 0–3 bonus. Meaningful at max, not dominant.
+  const fateBonus = state ? Math.round(computeFate(state) * 3) : 0;
+  const total    = d20 + modifier + fateBonus;
 
   const critical = d20 === 20;
-  const fumble   = d20 === 1;
+  const fumble   = d20 === 1 && fateBonus === 0; // fate can save a 1
   const success  = critical || (!fumble && total >= dc);
 
-  // Result tier for dialogue selection
   let tier;
-  if (critical)       tier = 'critical';
-  else if (fumble)    tier = 'fumble';
+  if (critical)                        tier = 'critical';
+  else if (fumble)                     tier = 'fumble';
   else if (success && total >= dc + 5) tier = 'strong';
-  else if (success)   tier = 'success';
+  else if (success)                    tier = 'success';
   else if (total >= dc - 3)            tier = 'near';
-  else                tier = 'fail';
+  else                                 tier = 'fail';
 
-  return {
-    roll: d20,
-    modifier,
-    total,
-    stat,
-    dc,
-    success,
-    critical,
-    fumble,
-    tier,
-    label: formatLabel(d20, modifier, dc, total, tier),
-  };
-}
+  const modStr    = modifier !== 0 ? (modifier > 0 ? `+${modifier}` : `${modifier}`) : '';
+  const fateStr   = fateBonus > 0 ? `+${fateBonus}✦` : '';
+  const resultWord = tier === 'critical' ? 'CRITICAL' : tier === 'fumble' ? 'FUMBLE' :
+    (tier === 'success' || tier === 'strong') ? 'SUCCESS' : 'FAIL';
+  const label = `[ROLL ${d20}${modStr}${fateStr} vs DC ${dc} = ${total} — ${resultWord}]`;
 
-function formatLabel(roll, mod, dc, total, tier) {
-  const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
-  const result = tier === 'critical' ? 'CRITICAL' :
-                 tier === 'fumble'   ? 'FUMBLE'   :
-                 tier.startsWith('s') || tier === 'strong' ? 'SUCCESS' : 'FAIL';
-  return `[ROLL ${roll}${modStr !== '+0' ? modStr : ''} vs DC ${dc} = ${total} — ${result}]`;
+  return { roll: d20, modifier, fateBonus, total, stat, dc, success, critical, fumble, tier, label };
 }
 
 // ── Riley's reactions ────────────────────────────────────────────────────────
@@ -194,52 +184,15 @@ export function getRileyReaction(tier, overrides = {}) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-// ── Convenience wrappers ─────────────────────────────────────────────────────
-
-/**
- * Quick check using charisma (rapport) — most common check type.
- * Use for social/persuasion challenges: "Can I get Riley to tell me the truth?"
- */
-export function charismaCheck(state, dc = DIFFICULTY.STANDARD) {
-  return rollCheck('charisma', buildStats(state), dc);
-}
-
-/**
- * Quick check using equipment (tools) — for technical challenges.
- * Use for: "Can I bypass this with what I have?"
- */
-export function equipmentCheck(state, dc = DIFFICULTY.STANDARD) {
-  return rollCheck('equipment', buildStats(state), dc);
-}
-
-/**
- * Quick check using experience (loops) — for pattern-recognition challenges.
- * Use for: "Have I seen this before?" "Does this feel wrong?"
- */
-export function experienceCheck(state, dc = DIFFICULTY.STANDARD) {
-  return rollCheck('experience', buildStats(state), dc);
-}
-
 /**
  * Roll with advantage: roll twice, take the higher result.
  * Use when player has a relevant tool or Riley is feeling cooperative.
  */
-export function rollWithAdvantage(stat, stats, dc) {
-  const a = rollCheck(stat, stats, dc);
-  const b = rollCheck(stat, stats, dc);
+export function rollWithAdvantage(stat, stats, dc, state = null) {
+  const a = rollCheck(stat, stats, dc, state);
+  const b = rollCheck(stat, stats, dc, state);
   const winner = a.total >= b.total ? a : b;
   return { ...winner, advantage: true, otherRoll: a.total < b.total ? a.roll : b.roll };
-}
-
-/**
- * Roll with disadvantage: roll twice, take the lower result.
- * Use when APEX is interfering or Riley is actively working against you.
- */
-export function rollWithDisadvantage(stat, stats, dc) {
-  const a = rollCheck(stat, stats, dc);
-  const b = rollCheck(stat, stats, dc);
-  const loser = a.total <= b.total ? a : b;
-  return { ...loser, disadvantage: true, otherRoll: a.total > b.total ? a.roll : b.roll };
 }
 
 // ── Boss fight helpers ───────────────────────────────────────────────────────
@@ -271,11 +224,11 @@ export function resistApexAttack(state, bossPhase) {
 // ── Karma polarity ───────────────────────────────────────────────────────────
 
 /**
- * Read the karma field (persisted through loops) to determine which Riley
- * the player has been cultivating.
+ * Use rapport (the single source of truth for player-Riley relationship)
+ * to determine which boss intro the player has earned.
  *
- * Theory A (villain):  karma ≤ DAMSEL_THRESHOLD
- * Theory B (damsel):   karma >  DAMSEL_THRESHOLD
+ * Theory A (villain):  rapport ≤ DAMSEL_THRESHOLD — Riley is calm, inevitable
+ * Theory B (damsel):   rapport >  DAMSEL_THRESHOLD — Riley is scared, reaching out
  *
  * Threshold is intentionally low — a few genuine moments of empathy tip the
  * balance. Players who were mostly neutral trend villain. Players who actively
@@ -284,7 +237,7 @@ export function resistApexAttack(state, bossPhase) {
 export const DAMSEL_THRESHOLD = 3;
 
 export function karmaPolar(state) {
-  return (state.karma || 0) > DAMSEL_THRESHOLD ? 'damsel' : 'villain';
+  return (state.rapport || 0) > DAMSEL_THRESHOLD ? 'damsel' : 'villain';
 }
 
 /**
@@ -314,61 +267,7 @@ export function computeFate(state) {
   return Math.min(fate, 1.0);
 }
 
-/**
- * Roll a d20 weighted by the WAFT aesthetic formula.
- * Fate (what you've earned) adds a small but real bonus to every roll.
- *
- * @param {string} stat
- * @param {object} stats - from buildStats(state)
- * @param {number} dc
- * @param {object} state - raw game state (for fate computation)
- */
+/** Convenience alias — fate is applied when state is passed to rollCheck directly. */
 export function rollCheckWithFate(stat, stats, dc = DIFFICULTY.STANDARD, state = {}) {
-  const luck = Math.floor(Math.random() * 20) + 1;  // d20
-  const fate = computeFate(state);
-  // Aesthetic value = 70% luck + 30% fate — normalized back to d20 range
-  const aestheticBonus = Math.round(fate * 0.3 * 4); // fate can add up to +1.2 ≈ +1
-  const modifier = stats[stat] ?? 0;
-  const total = luck + modifier + aestheticBonus;
-  const critical = luck === 20;
-  const fumble   = luck === 1 && aestheticBonus === 0; // fate can save a fumble
-  const success  = critical || (!fumble && total >= dc);
-
-  let tier;
-  if (critical)       tier = 'critical';
-  else if (fumble)    tier = 'fumble';
-  else if (success && total >= dc + 5) tier = 'strong';
-  else if (success)   tier = 'success';
-  else if (total >= dc - 3)            tier = 'near';
-  else                tier = 'fail';
-
-  return {
-    roll: luck,
-    modifier,
-    fateBonus: aestheticBonus,
-    total,
-    stat,
-    dc,
-    success,
-    critical,
-    fumble,
-    tier,
-    label: `[ROLL ${luck}${modifier !== 0 ? (modifier > 0 ? '+'+modifier : modifier) : ''}${aestheticBonus > 0 ? '+'+aestheticBonus+'✦' : ''} vs DC ${dc} = ${total} — ${tier.toUpperCase()}]`,
-  };
-}
-
-// ── Debug ────────────────────────────────────────────────────────────────────
-
-/**
- * Log a full stat breakdown to the console (dev only).
- */
-export function debugStats(state) {
-  const stats = buildStats(state);
-  console.group('[DnD] Player Stats');
-  console.log('Charisma (rapport):', stats.charisma,  `(rapport: ${state.rapport})`);
-  console.log('Equipment (tools): ', stats.equipment, `(${(state.toolsFound || []).length} tools)`);
-  console.log('Experience (loops):', stats.experience, `(loop ${state.loopCount})`);
-  console.log('Intuition (choices):', stats.intuition, `(${(state.userChoices || []).length} choices)`);
-  console.groupEnd();
-  return stats;
+  return rollCheck(stat, stats, dc, state);
 }
