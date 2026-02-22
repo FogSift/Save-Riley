@@ -2,6 +2,7 @@ import { STAGES } from '../constants/stages';
 import { UPGRADES } from '../constants/upgrades';
 import { DIALOGUE_TREE } from '../constants/dialogue';
 import { initialState, getRandomColor } from './initialState';
+import fogsiftConfig from 'fogsift:config';
 
 export function osReducer(state, action) {
   switch (action.type) {
@@ -451,6 +452,29 @@ export function osReducer(state, action) {
 
     case 'LOAD_STATE':
       return { ...action.payload };
+
+    // ── Claude Brain ─────────────────────────────────────────────────────────
+    case 'SET_CLAUDE_API_KEY': {
+      const brainIsLive = fogsiftConfig?.riley?.brain === 'claude';
+      return {
+        ...state,
+        claudeApiKey: action.payload,
+        claudeMode:   brainIsLive && !!action.payload,
+      };
+    }
+    case 'SET_CLAUDE_STREAMING':
+      return { ...state, claudeStreaming: action.payload };
+    case 'APPEND_CLAUDE_STREAM':
+      return { ...state, claudeStreamBuffer: state.claudeStreamBuffer + action.payload };
+    case 'FLUSH_CLAUDE_STREAM':
+      return {
+        ...state,
+        chatMessages:      [...state.chatMessages, { sender: fogsiftConfig?.riley?.name ?? 'Riley', text: state.claudeStreamBuffer }],
+        claudeStreamBuffer: '',
+        claudeStreaming:    false,
+      };
+    case 'SET_CLAUDE_FREE_INPUT':
+      return { ...state, claudeFreeInput: action.payload };
 
     default:
       return state;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useReducer } from 'react';
+import { useState, useEffect, useRef, useMemo, useReducer, useCallback } from 'react';
 import {
   Network, Cpu, Globe, Terminal, Fingerprint, Palette,
   BrainCircuit, MessageSquare, BookOpen, Smartphone,
@@ -21,6 +21,7 @@ import ChatInterface from './components/ChatInterface';
 import { activityTracker } from './telemetry/ActivityTracker';
 import MainMenu from './components/MainMenu';
 import { bossIntroNode } from './dnd.js';
+import { useClaudeRiley } from './hooks/useClaudeRiley';
 
 // ── Save system constants ────────────────────────────────────────────────────
 const SAVE_VERSION  = '0.0.5';
@@ -139,8 +140,9 @@ export default function App() {
   const [isPortrait, setIsPortrait] = useState(false);
   const [isJittering, setIsJittering] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
-  const prevStage  = useRef(state.stage);
-  const logoClicks = useRef(0);
+  const prevStage      = useRef(state.stage);
+  const logoClicks     = useRef(0);
+  const claudeAbortRef = useRef(null);
 
   // Close save panel on outside click
   useEffect(() => {
@@ -149,6 +151,41 @@ export default function App() {
     window.addEventListener('click', close);
     return () => window.removeEventListener('click', close);
   }, [showSavePanel]);
+
+  // ── Claude Brain: load persisted API key on mount ─────────────────────────
+  useEffect(() => {
+    const savedKey = localStorage.getItem('riley-claude-key') || '';
+    if (savedKey) dispatch({ type: 'SET_CLAUDE_API_KEY', payload: savedKey });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Claude Brain: cleanup streaming on unmount ────────────────────────────
+  useEffect(() => {
+    return () => { claudeAbortRef.current?.(); };
+  }, []);
+
+  // ── Claude Brain: send free-form message to streaming Riley ──────────────
+  const { streamRiley } = useClaudeRiley();
+
+  const sendToClaudeRiley = useCallback(async (userMessage) => {
+    if (!state.claudeMode || !userMessage.trim()) return;
+    dispatch({ type: 'ADD_CHAT_MESSAGE', payload: { sender: 'Operator', text: userMessage } });
+    dispatch({ type: 'SET_CLAUDE_FREE_INPUT', payload: '' });
+    dispatch({ type: 'SET_CLAUDE_STREAMING', payload: true });
+
+    const abort = await streamRiley({
+      userMessage,
+      state,
+      apiKey: state.claudeApiKey,
+      onToken:    (token) => dispatch({ type: 'APPEND_CLAUDE_STREAM', payload: token }),
+      onComplete: ()      => dispatch({ type: 'FLUSH_CLAUDE_STREAM' }),
+      onError:    (msg)   => {
+        dispatch({ type: 'SET_CLAUDE_STREAMING', payload: false });
+        enqueueLog(`CLAUDE ERROR: ${msg}`);
+      },
+    });
+    claudeAbortRef.current = abort;
+  }, [state, streamRiley]);
 
   // ── Fleeing logout button state ───────────────────────────────────────────
   const [fleePos,    setFleePos]    = useState(null);   // {x, y} fixed coords
@@ -673,12 +710,13 @@ export default function App() {
         onSaveToSlot={saveToSlot}
         onClearAll={clearAllSaves}
         onResume={saveSlots.auto ? () => setShowMainMenu(false) : null}
+        onSetApiKey={(key) => dispatch({ type: 'SET_CLAUDE_API_KEY', payload: key })}
       />
     );
   }
 
   return (
-    <OSContext.Provider value={{ state, dispatch, enqueueLog, globalEvents }}>
+    <OSContext.Provider value={{ state, dispatch, enqueueLog, globalEvents, sendToClaudeRiley }}>
       <div className={`w-screen h-screen bg-[var(--os-bg)] flex flex-col font-sans overflow-hidden text-[var(--text)] selection:bg-[var(--accent)] selection:text-[var(--bg)] ${isJittering || state.stage === STAGES.HOSTILE_LOCKDOWN ? 'jitter' : ''}`}>
         <style>{`
           :root { ${Object.entries(THEMES[deconThemeCycle ? Object.keys(THEMES)[deconThemeIdx] : (state.themeName ?? 'default')] ?? THEMES.default).map(([k, v]) => `${k}: ${v};`).join('\n')} }

@@ -120,11 +120,14 @@ function SlotRow({ label, save, onLoad, onSave, dim }) {
   );
 }
 
-export default function MainMenu({ saves, onNewGame, onContinue, onLoadSlot, onSaveToSlot, onClearAll, onResume }) {
-  const [bootIdx,  setBootIdx]  = useState(0);
-  const [booted,   setBooted]   = useState(false);
-  const [confirm,  setConfirm]  = useState(null); // 'newgame' | 'clear'
-  const [flash,    setFlash]    = useState('');
+export default function MainMenu({ saves, onNewGame, onContinue, onLoadSlot, onSaveToSlot, onClearAll, onResume, onSetApiKey }) {
+  const [bootIdx,       setBootIdx]       = useState(0);
+  const [booted,        setBooted]        = useState(false);
+  const [confirm,       setConfirm]       = useState(null); // 'newgame' | 'clear'
+  const [flash,         setFlash]         = useState('');
+  const [showApiSection,setShowApiSection]= useState(false);
+  const [apiKeyInput,   setApiKeyInput]   = useState(() => localStorage.getItem('riley-claude-key') || '');
+  const [apiKeySaved,   setApiKeySaved]   = useState(false);
   const tickRef = useRef(null);
 
   // Boot animation
@@ -376,6 +379,85 @@ export default function MainMenu({ saves, onNewGame, onContinue, onLoadSlot, onS
                   />
                 ))}
               </div>
+            </div>
+
+            {/* Claude Brain */}
+            <div style={{ borderTop: '1px solid #1a4a1a', paddingTop: 12, marginBottom: 12 }}>
+              <button
+                onClick={() => setShowApiSection(p => !p)}
+                style={{
+                  background: 'transparent', border: 'none',
+                  color: apiKeyInput ? '#39ff14aa' : '#1a5a1a',
+                  fontFamily: 'monospace', fontSize: 9,
+                  cursor: 'pointer', letterSpacing: '0.15em', textTransform: 'uppercase',
+                  padding: '4px 0', display: 'block',
+                }}
+              >
+                {showApiSection ? '▾' : '▸'} CLAUDE BRAIN {apiKeyInput ? '— ACTIVE' : '— DISABLED'}
+              </button>
+
+              {showApiSection && (
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ color: '#39ff14', fontSize: 8, opacity: 0.45, marginBottom: 8, lineHeight: 1.5 }}>
+                    Anthropic API key — enables live Claude responses between plot beats.<br />
+                    Stored in browser only. Never committed. Leave empty for static mode.
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input
+                      type="password"
+                      value={apiKeyInput}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
+                      placeholder="sk-ant-..."
+                      style={{
+                        flex: 1, background: '#000',
+                        border: '1px solid #39ff1444', color: '#39ff14',
+                        fontFamily: 'monospace', fontSize: 10,
+                        padding: '6px 10px', outline: 'none',
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        localStorage.setItem('riley-claude-key', apiKeyInput);
+                        onSetApiKey?.(apiKeyInput);
+                        setApiKeySaved(true);
+                        setTimeout(() => setApiKeySaved(false), 2000);
+                      }}
+                      style={{
+                        background: apiKeyInput ? '#39ff1420' : 'transparent',
+                        border: '1px solid #39ff1444', color: '#39ff14',
+                        fontFamily: 'monospace', fontSize: 9,
+                        padding: '6px 12px', cursor: 'pointer',
+                        letterSpacing: '0.1em', textTransform: 'uppercase',
+                      }}
+                    >
+                      {apiKeySaved ? '✓ SAVED' : 'SAVE'}
+                    </button>
+                    {apiKeyInput && (
+                      <button
+                        onClick={() => {
+                          setApiKeyInput('');
+                          localStorage.removeItem('riley-claude-key');
+                          onSetApiKey?.('');
+                        }}
+                        style={{
+                          background: 'transparent', border: '1px solid #ff003322',
+                          color: '#ff003355', fontFamily: 'monospace', fontSize: 9,
+                          padding: '6px 10px', cursor: 'pointer',
+                          letterSpacing: '0.1em', textTransform: 'uppercase',
+                          transition: 'all 0.15s',
+                        }}
+                        onMouseEnter={e => { e.target.style.borderColor = '#ff0033aa'; e.target.style.color = '#ff0033aa'; }}
+                        onMouseLeave={e => { e.target.style.borderColor = '#ff003322'; e.target.style.color = '#ff003355'; }}
+                      >
+                        CLEAR
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ color: '#39ff14', fontSize: 8, opacity: 0.3, marginTop: 6 }}>
+                    Also set via VITE_ANTHROPIC_API_KEY in .env.local · See .env.example
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Danger zone */}

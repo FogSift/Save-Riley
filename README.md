@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![Built with React](https://img.shields.io/badge/Built%20with-React%2018-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![No backend](https://img.shields.io/badge/Backend-None-brightgreen)](https://github.com/FogSift/Save-Riley)
-[![Version](https://img.shields.io/badge/version-0.0.4-orange)](https://github.com/FogSift/Save-Riley/releases)
+[![Version](https://img.shields.io/badge/version-0.0.5-orange)](https://github.com/FogSift/Save-Riley/releases)
 
 ---
 
@@ -52,6 +52,63 @@ npx fogsift-init --repo /path/to/your-project
 New hire joins your team? Instead of reading 200 pages of internal docs, they boot up a browser game where an AI narrator named Riley guides them through your actual codebase — referencing your real components, your real architecture decisions, your real tech debt. The narrative is structured around understanding *your* project.
 
 They'll remember it.
+
+---
+
+## Using Claude Code
+
+This repo ships with [`CLAUDE.md`](./CLAUDE.md) — a context file that tells Claude Code exactly how the FogSift engine works. Fork the repo, open it in Claude Code, and start building immediately.
+
+```bash
+# Fork and clone
+gh repo fork FogSift/Save-Riley --fork-name my-project-arg
+cd my-project-arg
+
+# Start Claude Code — it reads CLAUDE.md automatically
+claude
+```
+
+**Common Claude Code tasks in this repo:**
+
+```bash
+# Generate a fogsift.config.js for your actual codebase
+"Generate a fogsift.config.js for this repo's structure"
+
+# Add dialogue
+"Add a Riley line at rapport 5 about the auth module"
+
+# Add a stage
+"Add a new stage between HANDSHAKE and VIBE_THERMAL_TASK about API rate limiting"
+
+# Enable the Claude brain
+"Set riley.brain to 'claude' and add 3 secrets about this codebase"
+
+# Understand the architecture
+"How does the dialogue engine work? Trace a message from queue to screen."
+```
+
+### Enable Riley's Live Claude Brain
+
+Set `riley.brain: 'claude'` in `fogsift.config.js`, then provide your API key:
+
+```js
+// fogsift.config.js
+riley: {
+  brain: 'claude',
+  personality: 'glitching',   // corporate | sardonic | warm | glitching
+  secrets: [
+    "The auth module hasn't been audited since 2022.",
+    "There's a feature flag nobody knows about.",
+  ],
+}
+```
+
+Then either:
+
+- Set `VITE_ANTHROPIC_API_KEY=sk-ant-...` in `.env.local` (see [`.env.example`](./.env.example))
+- Or enter it in-game: **Main Menu → ▸ CLAUDE BRAIN → enter key → SAVE**
+
+The static game is completely unchanged if no key is set. Zero API calls in static mode.
 
 ---
 
@@ -540,11 +597,13 @@ Neither theory is confirmed. The game ends before you know. That's the ending.
 
 ## Roadmap
 
-### v0.0.5 (next)
+### v0.0.5 (current)
 
 - `fogsift-init.cjs` — repo-reading CLI that generates a populated `fogsift.config.js`
+- `fogsift.config.js` — shipped default config; app reads `project.name` into boot logs
+- `CLAUDE.md` — context file for Claude Code users; fork + open + ask = working
+- **Live Claude API as Riley's brain** — `riley.brain: 'claude'` + API key → streaming haiku responses between plot beats
 - DnD skill check system — `dnd.js` + hooks in dialogue + boss fight integration
-- `fogsift.config.js` schema finalized and documented
 
 ### Near-term
 
@@ -554,7 +613,6 @@ Neither theory is confirmed. The game ends before you know. That's the ending.
 
 ### Medium-term
 
-- **Live Claude API as Riley's brain** — replace static DIALOGUE_TREE with streaming Claude responses
 - **Real-time shared terminal** — WebSocket multiplayer (Partykit); one operator's JITTER glitches everyone
 - **Chapter marketplace** — community-published chapters as importable JSON modules
 

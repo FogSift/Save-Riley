@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react';
-import { User, X, Send, Lock, Loader2 } from 'lucide-react';
+import { User, X, Send, Lock, Loader2, Zap } from 'lucide-react';
 import { useOS } from '../context/OSContext';
 
 export default function ChatInterface({ isModal }) {
-  const { state, dispatch } = useOS();
+  const { state, dispatch, sendToClaudeRiley } = useOS();
   const scrollRef = useRef(null);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [state.chatMessages, state.isTyping, state.chatOptions]);
+  }, [state.chatMessages, state.isTyping, state.chatOptions, state.claudeStreamBuffer]);
 
   const content = (
     <div
@@ -31,7 +31,14 @@ export default function ChatInterface({ isModal }) {
             <div className="w-2.5 h-2.5 rounded-full bg-green-400 absolute bottom-0 right-0 border-2 border-[var(--secure)] animate-pulse shadow-[0_0_8px_#4ade80]" />
           </div>
           <div>
-            <div className="font-bold text-sm tracking-wide leading-none group-hover:text-white transition-colors">Riley</div>
+            <div className="font-bold text-sm tracking-wide leading-none group-hover:text-white transition-colors flex items-center gap-1.5">
+                Riley
+                {state.claudeMode && (
+                  <span className="text-[7px] bg-yellow-300 text-black px-1 py-0.5 rounded font-mono uppercase tracking-widest inline-flex items-center gap-0.5">
+                    <Zap size={7} /> LIVE
+                  </span>
+                )}
+              </div>
             <div className="text-[9px] opacity-70 mt-1 uppercase tracking-widest font-mono flex items-center gap-2">
               Senior Tech{' '}
               <span className="bg-black/30 px-1 rounded border border-white/10" title="Internal Rapport Score">
@@ -90,6 +97,27 @@ export default function ChatInterface({ isModal }) {
             </div>
           </div>
         )}
+
+        {/* Claude streaming: live token buffer */}
+        {state.claudeStreaming && state.claudeStreamBuffer && (
+          <div className="flex items-start">
+            <div className="bg-[var(--secure-dim)] border border-[var(--secure)] p-3 rounded-xl rounded-tl-sm text-sm text-[var(--text-strong)] max-w-[85%] leading-relaxed">
+              {state.claudeStreamBuffer}
+              <span className="inline-block w-1 h-3 bg-[var(--secure)] animate-pulse ml-0.5 align-middle" />
+            </div>
+          </div>
+        )}
+
+        {/* Claude streaming: dots while waiting for first token */}
+        {state.claudeStreaming && !state.claudeStreamBuffer && (
+          <div className="flex items-start">
+            <div className="bg-[var(--secure-dim)] border border-[var(--secure)] p-4 rounded-xl rounded-tl-sm flex gap-1">
+              {[0, 150, 300].map(delay => (
+                <div key={delay} className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input / Options */}
@@ -127,6 +155,30 @@ export default function ChatInterface({ isModal }) {
           <div className="flex items-center gap-2 text-[10px] text-[var(--dim)] font-mono uppercase tracking-widest px-2">
             <Loader2 size={12} className="animate-spin" /> Receiving transmission...
           </div>
+        ) : state.claudeMode && !state.claudeStreaming && state.chatQueue.length === 0 ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendToClaudeRiley?.(state.claudeFreeInput);
+            }}
+            className="flex gap-2"
+          >
+            <input
+              type="text"
+              value={state.claudeFreeInput}
+              onChange={(e) => dispatch({ type: 'SET_CLAUDE_FREE_INPUT', payload: e.target.value })}
+              placeholder="Message Riley..."
+              autoFocus
+              className="flex-1 bg-[var(--black)] border border-[var(--secure)] rounded px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] placeholder:text-[var(--dim)] font-mono"
+            />
+            <button
+              type="submit"
+              disabled={!state.claudeFreeInput.trim()}
+              className="px-3 py-2 bg-[var(--secure)] text-white rounded text-xs font-bold hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              <Send size={14} />
+            </button>
+          </form>
         ) : (
           <div className="w-full bg-[var(--black)] border border-[var(--dim)] rounded-lg px-3 py-2.5 text-xs text-[var(--dim)] cursor-not-allowed select-none flex items-center justify-between">
             <span>Reply locked by admin...</span>

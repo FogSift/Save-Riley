@@ -1,5 +1,9 @@
 import { STAGES, VIBE_COLORS } from '../constants/stages';
 import { DIALOGUE_TREE } from '../constants/dialogue';
+import fogsiftConfig from 'fogsift:config';
+
+const _projectName = fogsiftConfig?.project?.name ?? 'FOGSIFT_OS';
+const _bootLabel   = _projectName.toUpperCase().replace(/\s+/g, '_');
 
 export const getRandomColor = () => VIBE_COLORS[Math.floor(Math.random() * VIBE_COLORS.length)];
 
@@ -27,7 +31,7 @@ export const initialState = {
   activeApp: 'HARDWARE',
   isTerminalOpen: false,
   logs: [
-    'BOOT: FOGSIFT_OS_v5.2',
+    `BOOT: ${_bootLabel}_v5.2`,
     'OPERATOR_INSTANCE: #0997 — INITIALIZED',
     'SYSTEM HEALTH: CRITICAL.',
     'ERROR: NO POWER DETECTED IN PRIMARY BUS.',
@@ -78,4 +82,11 @@ export const initialState = {
   archivedEntities: 0,    // counts entity eliminations in SubstrateSimulation
   nexusFirstSeen: false,  // true after RILEY_UNBOUND — enables post-game content
   calibratedFreqs: [],    // secret Solfeggio freqs logged; persists across resets
+
+  // ── Claude Brain state (not persisted in game save) ─────────────────────────
+  claudeMode:        false,  // true when brain='claude' AND apiKey is set
+  claudeApiKey:      '',     // loaded from localStorage on mount
+  claudeStreaming:   false,  // true while a streaming response is in flight
+  claudeStreamBuffer:'',     // accumulates streaming tokens before flush
+  claudeFreeInput:   '',     // controlled input value in Claude free-form mode
 };
