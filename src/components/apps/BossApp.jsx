@@ -12,7 +12,8 @@ import BossHose from '../BossHose';
 import GhostMonitor from '../GhostMonitor';
 import { OSContext } from '../../context/OSContext';
 import { STAGES } from '../../constants/stages';
-import { APEX_TAUNTS, NODE_SEQUENCE, SIMON_SEQUENCE, TOOLS } from '../../constants/boss';
+import { APEX_TAUNTS, BEHAVIORAL_TAUNTS, NODE_SEQUENCE, SIMON_SEQUENCE, TOOLS } from '../../constants/boss';
+import { activityTracker } from '../../telemetry/ActivityTracker';
 import { DIALOGUE_TREE } from '../../constants/dialogue';
 import { globalEvents } from '../../events/EventManager';
 import { sounds } from '../../sounds/audio';
@@ -537,7 +538,8 @@ export default function BossApp() {
   const [feedMessages, setFeedMessages] = useState([]);
   const [isAttacking, setIsAttacking] = useState(false);
   const attackTimerRef = useRef(null);
-  const tauntsUsed = useRef([]);
+  const tauntsUsed          = useRef([]);
+  const behavioralTauntsUsed = useRef([]);
 
   const hasThermoShield = toolsFound.includes('thermo_shield');
   const hasThingifier  = toolsFound.includes('thingifier');
@@ -546,6 +548,30 @@ export default function BossApp() {
   const addFeedMsg = useCallback((sender, text) => {
     setFeedMessages(prev => [...prev.slice(-40), { sender, text }]);
   }, []);
+
+  // Behavioral surveillance — sample movement every 15-25s, inject a profile-matched taunt
+  useEffect(() => {
+    if (state.stage !== STAGES.BOSS_FIGHT) return;
+
+    // Randomize interval between 15s and 25s so it doesn't feel mechanical
+    const scheduleNext = () => {
+      const delay = 15_000 + Math.random() * 10_000;
+      return setTimeout(() => {
+        const { profile } = activityTracker.analyzeBehavior(10_000);
+        const pool   = BEHAVIORAL_TAUNTS[profile] ?? BEHAVIORAL_TAUNTS.calm;
+        const unused = pool.filter(t => !behavioralTauntsUsed.current.includes(t));
+        const taunt  = unused.length > 0
+          ? unused[Math.floor(Math.random() * unused.length)]
+          : pool[Math.floor(Math.random() * pool.length)]; // recycle when exhausted
+        if (unused.length > 0) behavioralTauntsUsed.current.push(taunt);
+        addFeedMsg('A.P.E.X.', taunt);
+        timerId = scheduleNext(); // schedule next
+      }, delay);
+    };
+
+    let timerId = scheduleNext();
+    return () => clearTimeout(timerId);
+  }, [state.stage, addFeedMsg]);
 
   // APEX attack tick
   useEffect(() => {

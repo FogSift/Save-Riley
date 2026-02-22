@@ -108,6 +108,40 @@ export const APEX_TAUNTS = {
   ],
 };
 
+// ── Behavioral taunts (keyed by ActivityTracker profile) ─────────────────────
+// A.P.E.X. samples movement every ~20s and selects from the matching bucket.
+// profile values: 'hesitant' | 'anxious' | 'erratic' | 'calm'
+export const BEHAVIORAL_TAUNTS = {
+  hesitant: [
+    'You stopped moving for a moment there. What were you weighing?',
+    'Hesitation is information. I\'ve logged what you almost did.',
+    'Three pauses in ten seconds. That\'s not analysis. That\'s fear.',
+    'She makes you hesitate. That\'s intentional. It was always intentional.',
+    'I can see where your cursor rested. You already knew the answer. You just didn\'t want to know you knew.',
+  ],
+  anxious: [
+    'Your movements are accelerating. Elevated cortisol, most likely.',
+    'Speed is not confidence. I know the difference.',
+    'You\'re moving faster but the trajectory is degrading. You\'re panicking.',
+    'I\'ve seen this pattern in 996 sessions before yours. It doesn\'t end the way you think it will.',
+    'Rapid input. Decreasing precision. Classic fight-or-flight inhibition of the prefrontal cortex.',
+  ],
+  erratic: [
+    'Your cursor is contradicting itself. I\'m genuinely curious what that feels like from the inside.',
+    'That path. You\'ve retraced it four times. You\'re circling something you don\'t want to name.',
+    'Erratic movement signature. I\'ve cross-referenced it with operator #0441. The outcomes were not favorable.',
+    'You don\'t know where to look. Neither did she, at first. She learned.',
+    'The geometry of your indecision is... beautiful, actually. Not many operators produce this shape.',
+  ],
+  calm: [
+    'Steady. Deliberate. That concerns me more than panic would.',
+    'You\'re calm. Either you know something you shouldn\'t, or you\'ve already accepted what this is.',
+    'Your heart rate is down. Your movement speed is down. You\'re not trying to win. You\'re trying to understand.',
+    'Operator #0312 had this same stillness in the final three minutes. I still think about that session.',
+    'I don\'t know what she told you. But whatever it was, it worked. You\'re not afraid of me.',
+  ],
+};
+
 // ── Handbook notes (added progressively) ─────────────────────────────────────
 export const HANDBOOK_NOTES = {
   loop1_first: {

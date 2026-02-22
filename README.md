@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![Built with React](https://img.shields.io/badge/Built%20with-React%2018-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![No backend](https://img.shields.io/badge/Backend-None-brightgreen)](https://github.com/FogSift/Save-Riley)
-[![Version](https://img.shields.io/badge/version-0.1.0-orange)](https://github.com/FogSift/Save-Riley/releases)
+[![Version](https://img.shields.io/badge/version-0.1.1-orange)](https://github.com/FogSift/Save-Riley/releases)
 
 ---
 
@@ -605,7 +605,7 @@ Neither theory is confirmed. The game ends before you know. That's the ending.
 - **Live Claude API as Riley's brain** — `riley.brain: 'claude'` + API key → streaming haiku responses between plot beats
 - DnD skill check system — `dnd.js` + hooks in dialogue + boss fight integration
 
-### v0.2.0 (next)
+### v0.1.1 (next)
 
 - **Mouse dynamics surveillance** — ActivityTracker records movement speed, trajectory curvature, hesitation zones. A.P.E.X. reacts to detected emotional state during boss fight. GhostMonitor renders behavioral heatmap.
 - **Ghost replay on loop** — when `loopCount >= 1`, a faint trail of the player's previous-loop mouse path overlays the screen. The world resets. The ghost doesn't.

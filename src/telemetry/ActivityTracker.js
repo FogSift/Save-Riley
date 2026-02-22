@@ -271,6 +271,79 @@ class ActivityTracker {
   // ── Analytics ────────────────────────────────────────────────────────────────
 
   /**
+   * Analyzes recent mouse movement to derive a behavioral profile.
+   *
+   * Looks at the last `windowMs` of MOVE events and computes:
+   *   hesitations  — number of gaps > 800ms between consecutive moves
+   *   avgSpeed     — average Euclidean distance per ms across consecutive pairs
+   *   erraticScore — fraction of consecutive move-pairs where direction changed
+   *                  by more than 90° (normalized 0–1)
+   *   profile      — 'calm' | 'hesitant' | 'anxious' | 'erratic'
+   *
+   * Called by BossApp every ~20s to pick a behavior-matched A.P.E.X. taunt.
+   *
+   * @param {number} windowMs - how far back to sample (default 10s)
+   * @returns {{ hesitations: number, avgSpeed: number, erraticScore: number, profile: string }}
+   */
+  analyzeBehavior(windowMs = 10_000) {
+    const moves = this.buf.recent(windowMs).filter(e => e.type === EVT.MOVE);
+
+    if (moves.length < 3) {
+      return { hesitations: 0, avgSpeed: 0, erraticScore: 0, profile: 'calm' };
+    }
+
+    let hesitations   = 0;
+    let totalDist     = 0;
+    let totalTime     = 0;
+    let dirChanges    = 0;
+    let comparisons   = 0;
+
+    for (let i = 1; i < moves.length; i++) {
+      const prev = moves[i - 1];
+      const curr = moves[i];
+      const dt   = curr.t - prev.t;
+
+      // Hesitation: gap > 800ms between consecutive move samples
+      if (dt > 800) hesitations++;
+
+      // Speed: normalized-coord distance / time
+      const dx   = curr.x - prev.x;
+      const dy   = curr.y - prev.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      totalDist += dist;
+      totalTime += dt;
+
+      // Erratic: direction reversal vs previous segment
+      if (i >= 2) {
+        const p2 = moves[i - 2];
+        const pdx = prev.x - p2.x;
+        const pdy = prev.y - p2.y;
+        // Dot product of (prev→curr) and (p2→prev): negative = angle > 90°
+        const dot = pdx * dx + pdy * dy;
+        if (dot < 0) dirChanges++;
+        comparisons++;
+      }
+    }
+
+    const avgSpeed    = totalTime > 0 ? totalDist / totalTime : 0;
+    const erraticScore = comparisons > 0 ? dirChanges / comparisons : 0;
+
+    // Classify profile
+    let profile;
+    if (erraticScore > 0.55) {
+      profile = 'erratic';
+    } else if (hesitations >= 3) {
+      profile = 'hesitant';
+    } else if (avgSpeed > 0.003 && erraticScore > 0.3) {
+      profile = 'anxious';
+    } else {
+      profile = 'calm';
+    }
+
+    return { hesitations, avgSpeed, erraticScore, profile };
+  }
+
+  /**
    * Returns a session statistics summary object.
    */
   summary() {
