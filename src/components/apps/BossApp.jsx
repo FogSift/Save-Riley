@@ -16,6 +16,7 @@ import { APEX_TAUNTS, NODE_SEQUENCE, SIMON_SEQUENCE, TOOLS } from '../../constan
 import { DIALOGUE_TREE } from '../../constants/dialogue';
 import { globalEvents } from '../../events/EventManager';
 import { sounds } from '../../sounds/audio';
+import { buildStats, rollCheck, getRileyReaction, DIFFICULTY, resistApexAttack } from '../../dnd.js';
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 const HOSE_ANCHOR  = [{ x: 30, y: 180 }, { x: 30, y: 220 }]; // wall ports (left side of SVG)
@@ -425,7 +426,12 @@ function Phase3Panel({ state, dispatch }) {
   const handleAriaSubmit = (e) => {
     e.preventDefault();
     if (ariaInput.toUpperCase() === 'ARIA') {
-      dispatch({ type: 'ENTER_ARIA_CODE' });
+      // DnD charisma check on final code entry — affects Riley's parting words
+      const stats = buildStats(state);
+      const finalCheck = rollCheck('charisma', stats, DIFFICULTY.STANDARD);
+      // Dispatch the check result alongside ENTER_ARIA_CODE so App.jsx can
+      // pick a variant closing line from Riley based on the outcome
+      dispatch({ type: 'ENTER_ARIA_CODE', payload: { dndTier: finalCheck.tier } });
     } else {
       setAriaError(true);
       setTimeout(() => setAriaError(false), 1000);
@@ -547,26 +553,44 @@ export default function BossApp() {
     const interval = hasThingifier ? 24000 : 12000;
 
     attackTimerRef.current = setInterval(() => {
-      // Phase 1: reconnect a hose
+      setIsAttacking(true);
+      setTimeout(() => setIsAttacking(false), 800);
+
+      // DnD resistance roll — player rolls equipment stat vs APEX DC
+      const resistResult = resistApexAttack(state, bossPhase);
+      addFeedMsg('System', resistResult.label);
+
+      // Phase 1: reconnect a hose + optional damage
       if (bossPhase === 1) {
         const disconnected = state.hosesConnected.findIndex(c => !c);
         if (disconnected !== -1) {
-          setIsAttacking(true);
-          setTimeout(() => setIsAttacking(false), 800);
           dispatch({ type: 'RECONNECT_HOSE', payload: disconnected });
           addFeedMsg('A.P.E.X.', 'Containment hose reconnected. Did you expect that to hold?');
         }
-        if (!hasThermoShield) {
+        if (!hasThermoShield && !resistResult.success) {
           dispatch({ type: 'PLAYER_HIT', payload: 1 });
+        } else if (resistResult.critical) {
+          addFeedMsg('Riley', getRileyReaction('critical'));
+        } else if (resistResult.success) {
+          addFeedMsg('Riley', getRileyReaction('strong'));
         }
       }
-      // Phase 2: scramble (handled in Phase2Panel) + HP drain
+      // Phase 2: scramble (handled in Phase2Panel) + conditional HP drain
       if (bossPhase === 2) {
-        if (!hasThermoShield) dispatch({ type: 'PLAYER_HIT', payload: 1 });
+        if (!hasThermoShield && !resistResult.success) {
+          dispatch({ type: 'PLAYER_HIT', payload: 1 });
+        } else if (resistResult.fumble) {
+          dispatch({ type: 'PLAYER_HIT', payload: 2 }); // fumble = extra damage
+          addFeedMsg('Riley', getRileyReaction('fumble'));
+        } else if (resistResult.success) {
+          addFeedMsg('Riley', getRileyReaction('success'));
+        }
       }
-      // Phase 3: HP drain
+      // Phase 3: HP drain unless resisted
       if (bossPhase === 3) {
-        dispatch({ type: 'PLAYER_HIT', payload: hasThermoShield ? 0 : 1 });
+        const dmg = hasThermoShield ? 0 : resistResult.success ? 0 : resistResult.fumble ? 2 : 1;
+        if (dmg > 0) dispatch({ type: 'PLAYER_HIT', payload: dmg });
+        if (resistResult.critical) addFeedMsg('Riley', getRileyReaction('critical'));
       }
 
       // Taunt

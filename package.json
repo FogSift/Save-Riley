@@ -1,6 +1,6 @@
 {
   "name": "save-riley",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "An interactive browser-based narrative puzzle game / ARG. You're the new operator at FogSift Systems. Riley is just your helpful coworker... or is she?",
   "private": true,
   "type": "module",
