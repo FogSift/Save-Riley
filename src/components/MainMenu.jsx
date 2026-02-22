@@ -234,7 +234,7 @@ export default function MainMenu({ saves, onNewGame, onContinue, onLoadSlot, onS
                 SAVE RILEY
               </div>
               <div style={{ color: '#39ff14', fontSize: 9, opacity: 0.3, marginTop: 6, letterSpacing: '0.2em' }}>
-                v0.0.3 · OPERATOR_INSTANCE: #0997
+                v0.1.0 · OPERATOR_INSTANCE: #0997
               </div>
             </div>
 

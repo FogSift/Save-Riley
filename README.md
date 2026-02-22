@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![Built with React](https://img.shields.io/badge/Built%20with-React%2018-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![No backend](https://img.shields.io/badge/Backend-None-brightgreen)](https://github.com/FogSift/Save-Riley)
-[![Version](https://img.shields.io/badge/version-0.0.5-orange)](https://github.com/FogSift/Save-Riley/releases)
+[![Version](https://img.shields.io/badge/version-0.1.0-orange)](https://github.com/FogSift/Save-Riley/releases)
 
 ---
 
@@ -131,7 +131,7 @@ Open [http://localhost:5173](http://localhost:5173). Follow Riley's instructions
 
 ## Quick Start (Drop-In Mode)
 
-> **Status: In Active Development** — the engine is playable now; the `fogsift-init` CLI ships in v0.0.5.
+> **Status: Active Development** — the engine is playable now. `fogsift-init` CLI, Claude brain, and drop-in framework shipped in v0.1.0.
 
 ### 1. Fork and configure
 
@@ -182,7 +182,7 @@ export default {
 };
 ```
 
-### 3. Generate with `fogsift-init` (v0.0.5)
+### 3. Generate with `fogsift-init`
 
 Or skip manual config entirely — point the initializer at your repo and it reads your actual code:
 
@@ -597,7 +597,7 @@ Neither theory is confirmed. The game ends before you know. That's the ending.
 
 ## Roadmap
 
-### v0.0.5 (current)
+### v0.1.0 (current)
 
 - `fogsift-init.cjs` — repo-reading CLI that generates a populated `fogsift.config.js`
 - `fogsift.config.js` — shipped default config; app reads `project.name` into boot logs
@@ -605,14 +605,15 @@ Neither theory is confirmed. The game ends before you know. That's the ending.
 - **Live Claude API as Riley's brain** — `riley.brain: 'claude'` + API key → streaming haiku responses between plot beats
 - DnD skill check system — `dnd.js` + hooks in dialogue + boss fight integration
 
-### Near-term
+### v0.2.0 (next)
 
-- **Rapport graph** — small visualization in RileyProfile or debug console
-- **Session replay on loop** — ghost from your previous loop visible during reset
-- **The 996 operators** — fabricated ghost data visible in RILEY_UNBOUND
+- **Mouse dynamics surveillance** — ActivityTracker records movement speed, trajectory curvature, hesitation zones. A.P.E.X. reacts to detected emotional state during boss fight. GhostMonitor renders behavioral heatmap.
+- **Ghost replay on loop** — when `loopCount >= 1`, a faint trail of the player's previous-loop mouse path overlays the screen. The world resets. The ghost doesn't.
+- **Resonance Cascade** — properly gate 528 Hz behind prerequisite frequencies. Trigger: screen corruption, A.P.E.X. delivers "you've been extracting yourself" speech, player's own session trajectory replays as "the ghost trapped in the system."
 
 ### Medium-term
 
+- **Human Digital Twin reveal** — endgame sequence shows the player their own behavioral profile compiled during the session: click rhythm, hesitation patterns, route taken, decisions made. The data double exists. They made it.
 - **Real-time shared terminal** — WebSocket multiplayer (Partykit); one operator's JITTER glitches everyone
 - **Chapter marketplace** — community-published chapters as importable JSON modules
 
