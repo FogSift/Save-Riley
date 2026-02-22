@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useReducer, useCallback } from 'react';
 import {
   Network, Cpu, Globe, Terminal, Fingerprint, Palette,
-  BrainCircuit, MessageSquare, BookOpen, Smartphone,
+  BrainCircuit, MessageSquare, BookOpen, ScrollText, Smartphone,
   Flame, LogOut, Skull, X, Zap,
 } from 'lucide-react';
 
@@ -17,6 +17,7 @@ import { OSContext } from './context/OSContext';
 import TerminalApp   from './components/TerminalApp';
 import RileyProfile  from './components/RileyProfile';
 import ChatInterface from './components/ChatInterface';
+import JournalPanel  from './components/JournalPanel';
 
 import { activityTracker } from './telemetry/ActivityTracker';
 import MainMenu from './components/MainMenu';
@@ -86,7 +87,8 @@ export default function App() {
       return !(parsed?.version === SAVE_VERSION && parsed.state);
     } catch { return true; }
   });
-  const [showSavePanel, setShowSavePanel] = useState(false);
+  const [showSavePanel,  setShowSavePanel]  = useState(false);
+  const [journalOpen,    setJournalOpen]    = useState(false);
   const [saveFlash,     setSaveFlash]     = useState('');
 
   // ── Save system functions ─────────────────────────────────────────────────
@@ -849,6 +851,15 @@ export default function App() {
               )}
             </div>
 
+            {/* Journal toggle */}
+            <button
+              onClick={() => setJournalOpen(o => !o)}
+              className={`flex items-center justify-center p-1.5 rounded-md transition-all ${journalOpen ? 'bg-[var(--secure)] text-white' : 'bg-[var(--panel)] text-[var(--text)] hover:bg-[var(--dim-30)] border border-[var(--dim)]'}`}
+              title="Operator Field Log"
+            >
+              <ScrollText size={16} />
+            </button>
+
             {/* Chat toggle */}
             {!state.rileyDead && (
               <button
@@ -1127,6 +1138,10 @@ export default function App() {
           </div>
         </footer>
       </div>
+
+      {/* Journal overlay */}
+      {journalOpen && <JournalPanel onClose={() => setJournalOpen(false)} />}
+
     </OSContext.Provider>
   );
 }

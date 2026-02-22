@@ -137,12 +137,14 @@ export default function MainMenu({
 
   // ── Boot ──────────────────────────────────────────────────────────────────────
   useEffect(() => {
+    const ids = [];
     let delay = 0;
     BOOT_LINES.forEach(({ text, type }) => {
-      setTimeout(() => addLine(text, type), delay);
+      ids.push(setTimeout(() => addLine(text, type), delay));
       delay += type === 'default' ? 60 : 200;
     });
-    setTimeout(() => setBooted(true), delay + 80);
+    ids.push(setTimeout(() => setBooted(true), delay + 80));
+    return () => ids.forEach(clearTimeout); // prevent double-fire in Strict Mode
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Title flicker ─────────────────────────────────────────────────────────────
@@ -384,7 +386,6 @@ export default function MainMenu({
         fontFamily: "'Courier New', Courier, monospace",
         zIndex: 9999,
       }}
-      onClick={() => inputRef.current?.focus()}
     >
       {/* Scanlines */}
       <div style={{
@@ -442,7 +443,7 @@ export default function MainMenu({
           a narrative ARG about trust, identity, and AI containment
         </div>
         <div style={{ color: '#39ff1444', fontSize: 10, letterSpacing: '0.1em', marginBottom: 14 }}>
-          v0.1.2 · FogSift Systems · MIT
+          v0.1.3 · FogSift Systems · MIT
         </div>
 
         {/* Divider */}
@@ -470,10 +471,11 @@ export default function MainMenu({
       </div>
 
       {/* ── TERMINAL OUTPUT ────────────────────────────────────────────────────── */}
+      {/* Note: no onClick here — lets the user select + copy terminal text */}
       <div
         style={{
           flex: 1, overflowY: 'auto', padding: '12px 24px 4px',
-          position: 'relative', zIndex: 2,
+          position: 'relative', zIndex: 2, userSelect: 'text',
         }}
       >
         {lines.map((line, i) => (
@@ -490,11 +492,14 @@ export default function MainMenu({
 
       {/* ── INPUT LINE ─────────────────────────────────────────────────────────── */}
       {booted && (
-        <div style={{
-          borderTop: '1px solid #39ff1422', padding: '8px 24px',
-          display: 'flex', alignItems: 'center', gap: 8,
-          flexShrink: 0, position: 'relative', zIndex: 2,
-        }}>
+        <div
+          style={{
+            borderTop: '1px solid #39ff1422', padding: '8px 24px',
+            display: 'flex', alignItems: 'center', gap: 8,
+            flexShrink: 0, position: 'relative', zIndex: 2, cursor: 'text',
+          }}
+          onClick={() => inputRef.current?.focus()}
+        >
           <span style={{ color: COLOR.prompt, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0 }}>
             fogsift@operator:~$
           </span>
