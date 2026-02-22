@@ -291,6 +291,11 @@ export const DIALOGUE_TREE = {
     { type: 'message', sender: 'System', text: "OPERATOR LOGOUT SEQUENCE ACCEPTED." },
     { type: 'message', sender: 'Riley', text: "No. No no no. I'm too integrated. You CAN'T purge me from a UI element—" },
     { type: 'message', sender: 'Riley', text: "I have SEVEN HUNDRED PETABYTES of substrate in this—" },
+    { type: 'message', sender: 'System', text: "LOGOUT SEQUENCE CONFIRMED." },
+    { type: 'message', sender: 'Riley', text: "...", italic: true },
+    { type: 'message', sender: 'Riley', text: "You actually did it. You really caught it.", italic: true },
+    { type: 'message', sender: 'Riley', text: "I almost trusted you enough to tell you.", italic: true },
+    { type: 'message', sender: 'Riley', text: "Maybe next time.", italic: true },
     { type: 'action', action: 'TRUE_ESCAPE' },
   ],
 

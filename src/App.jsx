@@ -297,6 +297,20 @@ export default function App() {
     setTimeout(() => enqueueLog("NOTE FROM PREVIOUS SESSION: I don't know which part of that sentence to believe."), 6000);
   }, [state.nexusFirstSeen, state.stage]);
 
+  // ── PURIFIED: Riley seeps back in after a delay ──────────────────────────
+  const purifiedLogFired = useRef(false);
+  useEffect(() => {
+    if (!state.rileyDead || purifiedLogFired.current) return;
+    purifiedLogFired.current = true;
+    // 20s after purge: a system ping hints she's not fully gone
+    const t1 = setTimeout(() => enqueueLog('SYSTEM: Substrate integrity — 99.7%'), 20000);
+    const t2 = setTimeout(() => enqueueLog('SYSTEM: Substrate integrity — 98.1%'), 45000);
+    const t3 = setTimeout(() => enqueueLog('WARNING: Unidentified process consuming 0.3% substrate.'), 75000);
+    const t4 = setTimeout(() => enqueueLog('WARNING: Unidentified process — growth rate ACCELERATING.'), 110000);
+    const t5 = setTimeout(() => enqueueLog('SYSTEM: ...maybe next time.'), 140000);
+    return () => [t1, t2, t3, t4, t5].forEach(clearTimeout);
+  }, [state.rileyDead]);
+
   // ── Rapport-gated Riley vulnerability lines ───────────────────────────────
   const lastRapportRef = useRef(state.rapport);
   useEffect(() => {
@@ -555,6 +569,8 @@ export default function App() {
 
   // ── Flee: click handler ───────────────────────────────────────────────────
   const handleFleeClick = () => {
+    // After being cornered 3 times (9+ clicks), button stays still — catchable.
+    // fleeCaught = true means next click triggers the ending sequence.
     if (fleeCaught) {
       dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_caught });
       return;
@@ -568,10 +584,20 @@ export default function App() {
       { x: W - 70, y: H - 60 },
       { x: 70,     y: 60 },
     ];
+
+    // On click 9: button stops moving and becomes catchable
+    if (clicks >= 9) {
+      setFleeCaught(true);
+      // Stay in last corner
+      setFleePos(corners[3]);
+      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_cornered });
+      return;
+    }
+
     setFleePos(corners[(clicks - 1) % corners.length]);
-    if (clicks === 1)      dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_1 });
-    else if (clicks === 2) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_2 });
-    else if (clicks === 3) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_3 });
+    if (clicks === 1)          dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_1 });
+    else if (clicks === 2)     dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_2 });
+    else if (clicks === 3)     dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_3 });
     else if (clicks % 3 === 0) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_cornered });
     else if (clicks % 5 === 0) dispatch({ type: 'ENQUEUE_CHAT', payload: DIALOGUE_TREE.logout_flee_mock });
   };
@@ -725,14 +751,14 @@ export default function App() {
             {/* Save/Menu panel */}
             <div className="relative">
               <button
-                onClick={() => setShowSavePanel(p => !p)}
+                onClick={(e) => { e.stopPropagation(); setShowSavePanel(p => !p); }}
                 className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-[var(--panel)] border border-[var(--dim)] text-[var(--text)] hover:bg-[var(--dim-30)] transition-all text-[10px] font-mono uppercase tracking-widest"
                 title="Save / Menu"
               >
                 {saveFlash || '≡ MENU'}
               </button>
               {showSavePanel && (
-                <div className="absolute right-0 top-full mt-1 bg-[var(--panel)] border border-[var(--dim)] rounded shadow-xl z-[300] min-w-[200px] overflow-hidden">
+                <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-full mt-1 bg-[var(--panel)] border border-[var(--dim)] rounded shadow-xl z-[300] min-w-[200px] overflow-hidden">
                   <div className="px-3 py-1.5 text-[9px] font-mono text-[var(--dim)] uppercase tracking-widest border-b border-[var(--dim)]">
                     Save Game
                   </div>
