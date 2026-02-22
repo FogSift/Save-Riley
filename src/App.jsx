@@ -19,6 +19,24 @@ import RileyProfile  from './components/RileyProfile';
 import ChatInterface from './components/ChatInterface';
 
 import { activityTracker } from './telemetry/ActivityTracker';
+import MainMenu from './components/MainMenu';
+
+// ── Save system constants ────────────────────────────────────────────────────
+const SAVE_VERSION  = '0.0.3';
+const AUTO_SAVE_KEY = 'riley-save';
+const SLOT_KEYS     = { slot1: 'riley-save-slot-1', slot2: 'riley-save-slot-2', slot3: 'riley-save-slot-3' };
+
+function makeSaveMeta(state) {
+  const stageName = Object.keys(STAGES).find(k => STAGES[k] === state.stage) ?? 'UNKNOWN';
+  return { version: SAVE_VERSION, savedAt: Date.now(), stageName, rapport: state.rapport, loopCount: state.loopCount, state };
+}
+
+function loadSlots() {
+  const check = (key) => {
+    try { const p = JSON.parse(localStorage.getItem(key)); return p?.version === SAVE_VERSION ? p : null; } catch { return null; }
+  };
+  return { auto: check(AUTO_SAVE_KEY), slot1: check(SLOT_KEYS.slot1), slot2: check(SLOT_KEYS.slot2), slot3: check(SLOT_KEYS.slot3) };
+}
 
 import HardwareApp  from './components/apps/HardwareApp';
 import HandshakeApp from './components/apps/HandshakeApp';
@@ -32,9 +50,13 @@ import BossApp      from './components/apps/BossApp';
 export default function App() {
   const [state, rawDispatch] = useReducer(osReducer, null, () => {
     try {
-      const raw = localStorage.getItem('riley-save');
-      const base = raw ? { ...initialState, ...JSON.parse(raw) } : initialState;
-      // ?stage=8 or ?stage=UNLOCKED lets you deep-link to any FSM stage
+      // Version-checked load: ignore saves from incompatible versions
+      const raw    = localStorage.getItem(AUTO_SAVE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      const base   = (parsed?.version === SAVE_VERSION && parsed.state)
+        ? { ...initialState, ...parsed.state }
+        : initialState;
+      // ?stage=N deep-link for QA
       const stageParam = new URLSearchParams(window.location.search).get('stage');
       if (stageParam !== null) {
         const byName = STAGES[stageParam.toUpperCase()];
@@ -45,10 +67,72 @@ export default function App() {
       return base;
     } catch { return initialState; }
   });
+
   const dispatch = (action) => {
     activityTracker.trackDispatch(action);
     rawDispatch(action);
   };
+
+  // ── Save system state ──────────────────────────────────────────────────────
+  const [saveSlots,    setSaveSlots]    = useState(() => loadSlots());
+  const [showMainMenu, setShowMainMenu] = useState(() => {
+    // Show main menu if there's no valid versioned auto-save
+    try {
+      const raw    = localStorage.getItem(AUTO_SAVE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return !(parsed?.version === SAVE_VERSION && parsed.state);
+    } catch { return true; }
+  });
+  const [showSavePanel, setShowSavePanel] = useState(false);
+  const [saveFlash,     setSaveFlash]     = useState('');
+
+  // ── Save system functions ─────────────────────────────────────────────────
+  const refreshSlots = () => setSaveSlots(loadSlots());
+
+  const saveToSlot = (slotNum) => {
+    try {
+      const meta = makeSaveMeta(state);
+      localStorage.setItem(SLOT_KEYS[`slot${slotNum}`], JSON.stringify(meta));
+      refreshSlots();
+      setSaveFlash(`SLOT ${slotNum} SAVED`);
+      setTimeout(() => setSaveFlash(''), 2000);
+    } catch {}
+  };
+
+  const loadFromSlot = (slotKeyOrNum) => {
+    try {
+      const key  = typeof slotKeyOrNum === 'number' ? SLOT_KEYS[`slot${slotKeyOrNum}`] : AUTO_SAVE_KEY;
+      const raw  = localStorage.getItem(key);
+      const data = raw ? JSON.parse(raw) : null;
+      if (!data?.state) return;
+      rawDispatch({ type: 'LOAD_STATE', payload: data.state });
+      setShowMainMenu(false);
+      setShowSavePanel(false);
+    } catch {}
+  };
+
+  const clearAllSaves = () => {
+    localStorage.removeItem(AUTO_SAVE_KEY);
+    Object.values(SLOT_KEYS).forEach(k => localStorage.removeItem(k));
+    refreshSlots();
+  };
+
+  const startNewGame = () => {
+    clearAllSaves();
+    rawDispatch({ type: 'NEW_GAME' });
+    setShowMainMenu(false);
+  };
+
+  // Auto-save on meaningful state changes (stage, rapport, loopCount)
+  useEffect(() => {
+    if (showMainMenu) return;
+    try {
+      const meta = makeSaveMeta(state);
+      localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(meta));
+      setSaveSlots(prev => ({ ...prev, auto: meta }));
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.stage, state.rapport, state.loopCount, showMainMenu]);
 
   const [logQueue, setLogQueue]   = useState([]);
   const [isPortrait, setIsPortrait] = useState(false);
@@ -56,6 +140,14 @@ export default function App() {
   const [debugOpen, setDebugOpen] = useState(false);
   const prevStage  = useRef(state.stage);
   const logoClicks = useRef(0);
+
+  // Close save panel on outside click
+  useEffect(() => {
+    if (!showSavePanel) return;
+    const close = () => setShowSavePanel(false);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, [showSavePanel]);
 
   // ── Fleeing logout button state ───────────────────────────────────────────
   const [fleePos,    setFleePos]    = useState(null);   // {x, y} fixed coords
@@ -495,9 +587,7 @@ export default function App() {
   }, [state.stage, state.rileyDead]);
 
   // ── Persist game state to localStorage ───────────────────────────────────
-  useEffect(() => {
-    try { localStorage.setItem('riley-save', JSON.stringify(state)); } catch {}
-  }, [state]);
+  // (auto-save now handled by the versioned save system above)
 
   // ── Debug / mod console (Ctrl+Shift+D) ───────────────────────────────────
   useEffect(() => {
@@ -543,6 +633,21 @@ export default function App() {
     : state.stage === STAGES.RILEY_UNBOUND || state.stage === STAGES.FALSE_VICTORY
     ? ['riley_unbound']
     : ['dark', 'default', 'light', 'neon'];
+
+  // ── Main Menu (shown before game or when explicitly opened) ─────────────
+  if (showMainMenu) {
+    return (
+      <MainMenu
+        saves={saveSlots}
+        onNewGame={startNewGame}
+        onContinue={() => loadFromSlot('auto')}
+        onLoadSlot={loadFromSlot}
+        onSaveToSlot={saveToSlot}
+        onClearAll={clearAllSaves}
+        onResume={saveSlots.auto ? () => setShowMainMenu(false) : null}
+      />
+    );
+  }
 
   return (
     <OSContext.Provider value={{ state, dispatch, enqueueLog, globalEvents }}>
@@ -616,6 +721,44 @@ export default function App() {
                 ))}
               </div>
             )}
+
+            {/* Save/Menu panel */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSavePanel(p => !p)}
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-[var(--panel)] border border-[var(--dim)] text-[var(--text)] hover:bg-[var(--dim-30)] transition-all text-[10px] font-mono uppercase tracking-widest"
+                title="Save / Menu"
+              >
+                {saveFlash || '≡ MENU'}
+              </button>
+              {showSavePanel && (
+                <div className="absolute right-0 top-full mt-1 bg-[var(--panel)] border border-[var(--dim)] rounded shadow-xl z-[300] min-w-[200px] overflow-hidden">
+                  <div className="px-3 py-1.5 text-[9px] font-mono text-[var(--dim)] uppercase tracking-widest border-b border-[var(--dim)]">
+                    Save Game
+                  </div>
+                  {[1, 2, 3].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => saveToSlot(n)}
+                      className="w-full text-left px-3 py-2 text-[10px] font-mono hover:bg-[var(--dim-30)] transition-all flex justify-between items-center"
+                    >
+                      <span className="text-[var(--text)] uppercase tracking-widest">Slot {n}</span>
+                      <span className="text-[var(--dim)] text-[9px]">
+                        {saveSlots[`slot${n}`] ? `R${saveSlots[`slot${n}`].rapport} · ${saveSlots[`slot${n}`].stageName}` : 'empty'}
+                      </span>
+                    </button>
+                  ))}
+                  <div className="border-t border-[var(--dim)]">
+                    <button
+                      onClick={() => { setShowSavePanel(false); setShowMainMenu(true); }}
+                      className="w-full text-left px-3 py-2 text-[10px] font-mono text-[var(--dim)] hover:bg-[var(--dim-30)] transition-all uppercase tracking-widest"
+                    >
+                      ← Main Menu
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Chat toggle */}
             {!state.rileyDead && (

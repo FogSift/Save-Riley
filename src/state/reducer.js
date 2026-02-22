@@ -450,6 +450,9 @@ export function osReducer(state, action) {
     case 'NEW_GAME':
       return { ...initialState, targetVibeColor: getRandomColor(), chatQueue: [...DIALOGUE_TREE.intro_1] };
 
+    case 'LOAD_STATE':
+      return { ...action.payload };
+
     default:
       return state;
   }
