@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Save Riley — Developer API Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0a0a;
+      --panel:   #111;
+      --border:  #1e1e1e;
+      --dim:     #444;
+      --text:    #c8c8c8;
+      --accent:  #39ff14;
+      --alert:   #ff3b30;
+      --warn:    #ff9f0a;
+      --info:    #00b4ff;
+      --purple:  #bc13fe;
+      --heading: #f0f0f0;
+      --code-bg: #0e0e0e;
+      --sidebar-w: 260px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────────────────────────── */
+    #sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      z-index: 100;
+      padding: 0 0 40px 0;
+    }
+
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-track { background: transparent; }
+    #sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo .logo-mark {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      font-size: 11px;
+      color: #000;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo .logo-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--heading);
+      line-height: 1.3;
+    }
+
+    .sidebar-logo .logo-sub {
+      font-size: 9px;
+      color: var(--dim);
+      font-weight: 400;
+      letter-spacing: 0.12em;
+    }
+
+    .sidebar-section {
+      padding: 14px 18px 4px;
+    }
+
+    .sidebar-section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 6px;
+    }
+
+    .sidebar-link {
+      display: block;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+      line-height: 1.4;
+      border-left: 2px solid transparent;
+    }
+
+    .sidebar-link:hover {
+      background: rgba(57,255,20,0.07);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .sidebar-link.active {
+      background: rgba(57,255,20,0.1);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    /* ── Main content ─────────────────────────────────────────────────────── */
+    #main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      max-width: 900px;
+      padding: 48px 56px 120px;
+    }
+
+    /* ── Top bar ──────────────────────────────────────────────────────────── */
+    #topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 48px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+
+    .badge-version { background: rgba(57,255,20,0.15); color: var(--accent); }
+    .badge-stable  { background: rgba(0,180,255,0.15); color: var(--info); }
+    .badge-mit     { background: rgba(188,19,254,0.15); color: var(--purple); }
+
+    /* ── Typography ───────────────────────────────────────────────────────── */
+    h1 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--heading);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--heading);
+      margin: 56px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: -0.01em;
+      scroll-margin-top: 24px;
+    }
+
+    h2::before {
+      content: '// ';
+      color: var(--dim);
+      font-weight: 400;
+    }
+
+    h3 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 28px 0 10px;
+      letter-spacing: 0.04em;
+      scroll-margin-top: 24px;
+    }
+
+    p { margin-bottom: 14px; color: var(--text); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ul, ol { padding-left: 20px; margin-bottom: 14px; }
+    li { margin-bottom: 4px; }
+
+    strong { color: var(--heading); font-weight: 600; }
+    em { color: var(--dim); font-style: italic; }
+
+    /* ── Code ─────────────────────────────────────────────────────────────── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(57,255,20,0.08);
+      color: var(--accent);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 16px 0 20px;
+      position: relative;
+    }
+
+    pre code {
+      background: none;
+      color: #c8c8c8;
+      font-size: 12.5px;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    pre .kw  { color: #bc13fe; }   /* keyword */
+    pre .fn  { color: #39ff14; }   /* function name */
+    pre .str { color: #ff9f0a; }   /* string */
+    pre .cmt { color: #444; font-style: italic; } /* comment */
+    pre .num { color: #00b4ff; }   /* number */
+    pre .typ { color: #00f0ff; }   /* type */
+
+    /* ── Tables ───────────────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin: 16px 0 20px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    thead tr {
+      background: var(--panel);
+      border-bottom: 2px solid var(--border);
+    }
+
+    th {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--dim);
+      text-align: left;
+      padding: 10px 14px;
+    }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    td:first-child code { background: rgba(0,180,255,0.1); color: var(--info); }
+
+    /* ── Callouts ─────────────────────────────────────────────────────────── */
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: rgba(57,255,20,0.05);
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 16px 0 20px;
+      font-size: 13px;
+    }
+
+    .callout.warn {
+      border-color: var(--warn);
+      background: rgba(255,159,10,0.05);
+    }
+
+    .callout.alert {
+      border-color: var(--alert);
+      background: rgba(255,59,48,0.05);
+    }
+
+    .callout.info {
+      border-color: var(--info);
+      background: rgba(0,180,255,0.05);
+    }
+
+    .callout-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .callout .callout-title { color: var(--accent); }
+    .callout.warn .callout-title { color: var(--warn); }
+    .callout.alert .callout-title { color: var(--alert); }
+    .callout.info .callout-title  { color: var(--info); }
+
+    /* ── Action entry ─────────────────────────────────────────────────────── */
+    .action-entry {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 8px 0;
+      overflow: hidden;
+    }
+
+    .action-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.3);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .action-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--info);
+    }
+
+    .action-payload {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--dim);
+    }
+
+    .action-desc {
+      padding: 8px 14px;
+      font-size: 12.5px;
+      color: var(--text);
+    }
+
+    /* ── Chips ────────────────────────────────────────────────────────────── */
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 16px; }
+
+    .chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.06em;
+    }
+
+    .chip-stage   { background: rgba(57,255,20,0.12); color: var(--accent); }
+    .chip-persist { background: rgba(0,180,255,0.12); color: var(--info); }
+    .chip-tool    { background: rgba(188,19,254,0.12); color: var(--purple); }
+
+    /* ── Stat card ────────────────────────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+
+    .stat-card-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .stat-card-source {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--dim);
+      margin-bottom: 6px;
+    }
+
+    .stat-card-desc { font-size: 12px; color: var(--text); }
+
+    /* ── Footer ───────────────────────────────────────────────────────────── */
+    footer {
+      margin: 80px 0 0;
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--dim);
+      letter-spacing: 0.08em;
+      line-height: 2;
+    }
+
+    /* ── Responsive ───────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      #sidebar { display: none; }
+      #main { margin-left: 0; padding: 24px 20px 80px; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ────────────────────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">FS</div>
+    <div class="logo-text">
+      Save Riley API
+      <div class="logo-sub">Developer Reference</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Getting Started</div>
+    <a href="#overview"        class="sidebar-link">Overview</a>
+    <a href="#quick-start"     class="sidebar-link">Quick Start</a>
+    <a href="#architecture"    class="sidebar-link">Architecture</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Core</div>
+    <a href="#stages"          class="sidebar-link">Stages</a>
+    <a href="#state"           class="sidebar-link">State Shape</a>
+    <a href="#actions"         class="sidebar-link">Actions Reference</a>
+    <a href="#roguelike"       class="sidebar-link">Roguelike Fields</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Dialogue</div>
+    <a href="#dialogue-format" class="sidebar-link">Node Format</a>
+    <a href="#dialogue-actions" class="sidebar-link">Dialogue Actions</a>
+    <a href="#enqueue"         class="sidebar-link">Enqueueing Dialogue</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">DnD System</div>
+    <a href="#dnd-overview"    class="sidebar-link">Overview</a>
+    <a href="#dnd-stats"       class="sidebar-link">Stats</a>
+    <a href="#dnd-functions"   class="sidebar-link">Functions</a>
+    <a href="#dnd-karma"       class="sidebar-link">Karma Polarity</a>
+    <a href="#dnd-fate"        class="sidebar-link">Fate Dimension</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Hooks &amp; Events</div>
+    <a href="#hooks"           class="sidebar-link">useOS()</a>
+    <a href="#claude-hook"     class="sidebar-link">useClaudeRiley()</a>
+    <a href="#events"          class="sidebar-link">Event Bus</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Config &amp; Themes</div>
+    <a href="#config"          class="sidebar-link">fogsift.config.js</a>
+    <a href="#themes"          class="sidebar-link">Themes</a>
+    <a href="#tools"           class="sidebar-link">Tool IDs</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Extending</div>
+    <a href="#add-dialogue"    class="sidebar-link">Add Dialogue</a>
+    <a href="#add-stage"       class="sidebar-link">Add a Stage</a>
+    <a href="#add-app"         class="sidebar-link">Add an App</a>
+    <a href="#add-check"       class="sidebar-link">Add a Skill Check</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Reference</div>
+    <a href="#telemetry"       class="sidebar-link">Telemetry</a>
+    <a href="#save-system"     class="sidebar-link">Save System</a>
+    <a href="#known-issues"    class="sidebar-link">Known Issues</a>
+  </div>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
+<main id="main">
+
+  <div id="topbar">
+    <span class="topbar-badge badge-version">v0.1.3</span>
+    <span class="topbar-badge badge-stable">Stable</span>
+    <span class="topbar-badge badge-mit">MIT</span>
+  </div>
+
+  <h1>Save Riley<br/>Developer API Reference</h1>
+  <p>The FogSift engine is a fully programmable ARG platform. This document covers the public API surface: state shape, action types, dialogue format, DnD skill check system, hooks, and the event bus. Everything you need to fork, extend, or build chapters on top of Save Riley.</p>
+
+  <div class="callout info">
+    <div class="callout-title">Import path</div>
+    Import all stable exports from <code>src/lib/saveRileyAPI.js</code>. This module re-exports everything documented here. Don't import from internal modules directly — they may change between patch versions.
+  </div>
+
+  <!-- ── Overview ─────────────────────────────────────────────────────────── -->
+  <h2 id="overview">Overview</h2>
+
+  <p>Save Riley is a browser-based ARG engine built on a <strong>global useReducer FSM</strong>. There is no backend, no database, and no server. All state lives in a single JavaScript object. The entire game is a sequence of dispatched actions advancing a 18-stage finite state machine.</p>
+
+  <p>The public API has four main layers:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Layer</th><th>File</th><th>What it provides</th></tr></thead>
+      <tbody>
+        <tr><td><code>State + Reducer</code></td><td><code>src/state/</code></td><td>Immutable game state, 68 action cases</td></tr>
+        <tr><td><code>Dialogue Engine</code></td><td><code>src/constants/dialogue.js</code></td><td>Node-based conversation tree, queue system</td></tr>
+        <tr><td><code>DnD System</code></td><td><code>src/dnd.js</code></td><td>Skill checks, stats, karma, fate</td></tr>
+        <tr><td><code>Event Bus</code></td><td><code>src/events/EventManager.js</code></td><td>Cross-component signals (jitter, etc.)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Quick Start ───────────────────────────────────────────────────────── -->
+  <h2 id="quick-start">Quick Start</h2>
+
+  <h3>Fork and clone</h3>
+<pre><code>gh repo fork FogSift/Save-Riley --fork-name my-arg
+cd my-arg
+npm install
+npm run dev</code></pre>
+
+  <h3>Inject dialogue from a custom component</h3>
+<pre><code><span class="kw">import</span> { useOS, ACTION_TYPES } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+
+<span class="kw">export default function</span> <span class="fn">MyCustomApp</span>() {
+  <span class="kw">const</span> { state, dispatch } = <span class="fn">useOS</span>();
+
+  <span class="kw">return</span> (
+    &lt;button onClick={() =&gt; dispatch({
+      type: ACTION_TYPES.ENQUEUE_CHAT,
+      payload: [{
+        type: <span class="str">'message'</span>,
+        sender: <span class="str">'Riley'</span>,
+        text: <span class="str">'I see you found something interesting.'</span>
+      }]
+    })}&gt;
+      Trigger Riley
+    &lt;/button&gt;
+  );
+}</code></pre>
+
+  <h3>Roll a skill check</h3>
+<pre><code><span class="kw">import</span> { buildStats, rollCheck, DIFFICULTY, getRileyReaction } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+
+<span class="kw">const</span> stats  = <span class="fn">buildStats</span>(state);                          <span class="cmt">// derive from game state</span>
+<span class="kw">const</span> result = <span class="fn">rollCheck</span>(<span class="str">'charisma'</span>, stats, DIFFICULTY.HARD, state);
+<span class="cmt">// → { roll, modifier, fateBonus, total, dc, success, critical, fumble, tier, label }</span>
+
+<span class="kw">const</span> line = <span class="fn">getRileyReaction</span>(result.tier);  <span class="cmt">// Riley's response</span>
+dispatch({ type: ACTION_TYPES.ADD_LOG, payload: result.label });
+dispatch({ type: ACTION_TYPES.ENQUEUE_CHAT, payload: [{ type: <span class="str">'message'</span>, sender: <span class="str">'Riley'</span>, text: line }] });</code></pre>
+
+  <!-- ── Architecture ──────────────────────────────────────────────────────── -->
+  <h2 id="architecture">Architecture</h2>
+
+  <p>All state transitions flow through a single pattern:</p>
+
+<pre><code>User interaction
+      ↓
+dispatch({ type, payload })           <span class="cmt">// any component</span>
+      ↓
+osReducer(state, action) → newState   <span class="cmt">// pure, no side effects</span>
+      ↓
+React re-render
+      ↓
+useEffect watchers in App.jsx         <span class="cmt">// stage transitions, rapport gates</span>
+      ↓
+further dispatch() if needed          <span class="cmt">// queue dialogue, fire events</span></code></pre>
+
+  <div class="callout">
+    <div class="callout-title">Pure reducer</div>
+    <code>osReducer</code> is a pure function — no async, no fetch, no localStorage, no side effects of any kind. All external effects (saving, telemetry, streaming) happen in <code>App.jsx</code> via <code>useEffect</code> watchers or the wrapped <code>dispatch</code>.
+  </div>
+
+  <!-- ── Stages ────────────────────────────────────────────────────────────── -->
+  <h2 id="stages">Stages</h2>
+  <p>The FSM has 18 stages numbered 0–17. Import <code>STAGES</code> to reference them by name.</p>
+
+<pre><code><span class="kw">import</span> { STAGES } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;</code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>#</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>POWER_OFF</code></td><td>0</td><td>Initial state — main menu visible</td></tr>
+        <tr><td><code>HARDWARE_CALIBRATION</code></td><td>1</td><td>Bit-flip parity puzzle — flip 8 bits to match target</td></tr>
+        <tr><td><code>RESONANCE</code></td><td>2</td><td>Oscilloscope frequency tuner + secret Solfeggio sequence</td></tr>
+        <tr><td><code>HANDSHAKE</code></td><td>3</td><td>Biometric hold mechanic — hold until timer completes</td></tr>
+        <tr><td><code>VIBE_THERMAL_TASK</code></td><td>4</td><td>Hex color match task in Vibe IDE</td></tr>
+        <tr><td><code>ROUTING_MANUAL</code></td><td>5</td><td>Manual packet routing (15 cycles needed)</td></tr>
+        <tr><td><code>ROUTING_AUTO</code></td><td>6</td><td>Idle clicker + upgrade marketplace</td></tr>
+        <tr><td><code>SOFTWARE_FAULT</code></td><td>7</td><td>Backend config editor — patch required</td></tr>
+        <tr><td><code>UNLOCKED</code></td><td>8</td><td>Full OS access — subplot investigation</td></tr>
+        <tr><td><code>COMPLETED</code></td><td>9</td><td>"Normal" ending — comply path</td></tr>
+        <tr><td><code>HOSTILE_LOCKDOWN</code></td><td>10</td><td>Breach detected — loop system engaged</td></tr>
+        <tr><td><code>PURIFIED</code></td><td>11</td><td>True Escape ending — catch the flee button</td></tr>
+        <tr><td><code>BOSS_INTRO</code></td><td>12</td><td>A.P.E.X. emerges — karma-branched intro</td></tr>
+        <tr><td><code>BOSS_FIGHT</code></td><td>13</td><td>3-phase boss encounter</td></tr>
+        <tr><td><code>FALSE_VICTORY</code></td><td>14</td><td>4-second fake win screen</td></tr>
+        <tr><td><code>RILEY_UNBOUND</code></td><td>15</td><td>Nexus monologue + ASCII rabbit + UI deconstruction</td></tr>
+        <tr><td><code>MAINTENANCE_SHAFT</code></td><td>16</td><td>Secret escape path — off-grid W.RABBIT channel</td></tr>
+        <tr><td><code>OPERATOR_ESCAPED</code></td><td>17</td><td>Secret ending — operator exits before A.P.E.X. wakes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>URL deep-link to any stage (dev/QA)</h3>
+<pre><code>http://localhost:5173/?stage=HOSTILE_LOCKDOWN
+http://localhost:5173/?stage=13        <span class="cmt"># by number</span>
+http://localhost:5173/?stage=RILEY_UNBOUND</code></pre>
+
+  <!-- ── State Shape ───────────────────────────────────────────────────────── -->
+  <h2 id="state">State Shape</h2>
+  <p>The global state object has ~80 fields. Access via <code>useOS()</code>:</p>
+
+<pre><code><span class="kw">const</span> { state } = <span class="fn">useOS</span>();
+state.stage      <span class="cmt">// current STAGES value (number 0–17)</span>
+state.rapport    <span class="cmt">// 0–10, accumulates from dialogue choices</span>
+state.loopCount  <span class="cmt">// how many DO_GASLIGHT_RESET loops have fired</span></code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>stage</code></td><td>number</td><td>Current FSM stage (0–17)</td></tr>
+        <tr><td><code>powerOn</code></td><td>bool</td><td>False until ENGAGE_POWER</td></tr>
+        <tr><td><code>rapport</code></td><td>number</td><td>Cumulative empathy score; influences boss intro, Claude prompts</td></tr>
+        <tr><td><code>loopCount</code></td><td>number</td><td>How many gaslight resets have occurred</td></tr>
+        <tr><td><code>rileyDead</code></td><td>bool</td><td>True in PURIFIED, OPERATOR_ESCAPED; silences Riley's chat</td></tr>
+        <tr><td><code>activeApp</code></td><td>string</td><td>Currently focused dock app key</td></tr>
+        <tr><td><code>chatMode</code></td><td>string</td><td><code>'modal'</code> | <code>'sidebar'</code> | <code>'closed'</code></td></tr>
+        <tr><td><code>chatQueue</code></td><td>array</td><td>Dialogue steps waiting to be processed by the engine</td></tr>
+        <tr><td><code>chatMessages</code></td><td>array</td><td>Rendered conversation history <code>{ sender, text }</code></td></tr>
+        <tr><td><code>chatOptions</code></td><td>array</td><td>Currently displayed player reply options</td></tr>
+        <tr><td><code>userChoices</code></td><td>array</td><td>All choices made: <code>{ choiceId, rapportBoost }</code></td></tr>
+        <tr><td><code>toolsFound</code></td><td>string[]</td><td>Collected tool IDs; modify boss fight mechanics</td></tr>
+        <tr><td><code>ariaRevealed</code></td><td>bool</td><td>True after rapport 10 or legacy logs read</td></tr>
+        <tr><td><code>apexEncounters</code></td><td>number</td><td>Boss fight attempts across all loops</td></tr>
+        <tr><td><code>breakerIgnored</code></td><td>number</td><td>Non-Hardware app switches before breaker engaged</td></tr>
+        <tr><td><code>bossPhase</code></td><td>number</td><td>Current boss phase: 0=none, 1, 2, 3</td></tr>
+        <tr><td><code>playerHP</code></td><td>number</td><td>Boss fight HP (0–10; death resets boss)</td></tr>
+        <tr><td><code>claudeMode</code></td><td>bool</td><td>True when <code>brain:'claude'</code> AND API key present</td></tr>
+        <tr><td><code>claudeStreaming</code></td><td>bool</td><td>True while a streaming response is in flight</td></tr>
+        <tr><td><code>logs</code></td><td>string[]</td><td>Terminal log lines (capped at 40 via ADD_LOG)</td></tr>
+        <tr><td><code>currency</code></td><td>number</td><td>Routing cycle economy currency</td></tr>
+        <tr><td><code>routingAutoRate</code></td><td>number</td><td>Auto-tick cycles per interval</td></tr>
+        <tr><td><code>calibratedFreqs</code></td><td>string[]</td><td>Secret Solfeggio freqs found; survives resets</td></tr>
+        <tr><td><code>themeName</code></td><td>string</td><td>Active CSS theme key</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Actions Reference ─────────────────────────────────────────────────── -->
+  <h2 id="actions">Actions Reference</h2>
+  <p>Every state transition in the game is one of these 68 actions dispatched to <code>osReducer</code>. The <code>ACTION_TYPES</code> constant provides all keys:</p>
+
+<pre><code><span class="kw">import</span> { ACTION_TYPES } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+dispatch({ type: ACTION_TYPES.ENQUEUE_CHAT, payload: myNode });</code></pre>
+
+  <h3>Boot / Power</h3>
+  <div class="action-entry"><div class="action-header"><span class="action-name">ENGAGE_POWER</span><span class="action-payload">no payload</span></div><div class="action-desc">Boots the OS. Advances stage from POWER_OFF → HARDWARE_CALIBRATION and randomizes target bit pattern.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">NEW_GAME</span><span class="action-payload">no payload</span></div><div class="action-desc">Resets to <code>initialState</code> with a fresh random vibe color and intro dialogue queue.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">LOAD_STATE</span><span class="action-payload">payload: full state object</span></div><div class="action-desc">Replaces state entirely with the provided object. Used by the save system.</div></div>
+
+  <h3>Stage Progression</h3>
+  <div class="action-entry"><div class="action-header"><span class="action-name">SET_STAGE</span><span class="action-payload">payload: STAGES.X</span></div><div class="action-desc">Force-sets the stage. Used by debug panel and dialogue action steps.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">FLIP_BIT</span><span class="action-payload">payload: index 0–7</span></div><div class="action-desc">Toggles a bit in the Hardware parity puzzle. Auto-advances stage if parity matches.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">ACHIEVE_RESONANCE</span><span class="action-payload">no payload</span></div><div class="action-desc">Advances RESONANCE → HANDSHAKE. Dispatched by ResonanceApp on successful frequency match.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">CALIBRATE_FREQ</span><span class="action-payload">payload: frequency string</span></div><div class="action-desc">Adds a Solfeggio frequency to <code>calibratedFreqs</code>. Persists across resets.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">COMPLETE_HANDSHAKE</span><span class="action-payload">no payload</span></div><div class="action-desc">Advances HANDSHAKE → VIBE_THERMAL_TASK. Clears logs. Sets personality to 'awakened'.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">COMPLETE_THERMAL_TASK</span><span class="action-payload">no payload</span></div><div class="action-desc">Advances VIBE_THERMAL_TASK → ROUTING_MANUAL.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">COMPLETE_GAME</span><span class="action-payload">no payload</span></div><div class="action-desc">Advances UNLOCKED → COMPLETED (the comply ending). Gated to UNLOCKED stage only.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">APPLY_PATCH</span><span class="action-payload">payload: patch config string</span></div><div class="action-desc">Validates backend patch content. Succeeds if string contains "max_retries:5". Advances SOFTWARE_FAULT → UNLOCKED.</div></div>
+
+  <h3>Dialogue</h3>
+  <div class="action-entry"><div class="action-header"><span class="action-name">ENQUEUE_CHAT</span><span class="action-payload">payload: dialogue node array</span></div><div class="action-desc">Appends steps to <code>chatQueue</code>. The dialogue engine in <code>App.jsx</code> processes one step per render cycle. If chat is closed, auto-opens as sidebar.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">SELECT_CHAT_OPTION</span><span class="action-payload">payload: option object</span></div><div class="action-desc">Player selects a reply. Records choice to <code>userChoices</code>, applies <code>rapportBoost</code>, loads <code>nextNode</code> into queue, clears options.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">ADD_CHAT_MESSAGE</span><span class="action-payload">payload: { sender, text }</span></div><div class="action-desc">Directly pushes a rendered message to <code>chatMessages</code>. Used by Claude streaming to inject AI responses.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">SET_CHAT_MODE</span><span class="action-payload">payload: 'modal' | 'sidebar' | 'closed'</span></div><div class="action-desc">Controls chat panel visibility. Clears unread count.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">TOGGLE_CHAT</span><span class="action-payload">no payload</span></div><div class="action-desc">Toggles chat between closed and sidebar.</div></div>
+
+  <h3>Roguelike Loop</h3>
+  <div class="action-entry"><div class="action-header"><span class="action-name">DO_GASLIGHT_RESET</span><span class="action-payload">no payload</span></div><div class="action-desc">Triggers the loop. Preserves 13 roguelike fields. On first reset: boot loop 1 dialogue. On second: jumps directly to HOSTILE_LOCKDOWN.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">TRUE_ESCAPE</span><span class="action-payload">no payload</span></div><div class="action-desc">Advances to PURIFIED stage. Sets <code>rileyDead: true</code>, theme to 'light'. Triggered by catching the flee button.</div></div>
+
+  <h3>Boss Fight</h3>
+  <div class="action-entry"><div class="action-header"><span class="action-name">ENTER_BOSS_INTRO</span><span class="action-payload">no payload</span></div><div class="action-desc">Transitions to BOSS_INTRO, increments <code>apexEncounters</code>, resets all per-encounter boss state.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">ENTER_BOSS_FIGHT</span><span class="action-payload">no payload</span></div><div class="action-desc">Advances to BOSS_FIGHT stage, sets <code>bossPhase: 1</code>.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">BOSS_PHASE_COMPLETE</span><span class="action-payload">no payload</span></div><div class="action-desc">Increments <code>bossPhase</code>. Phase 4+ triggers FALSE_VICTORY.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">PLAYER_HIT</span><span class="action-payload">payload?: damage (default 1)</span></div><div class="action-desc">Reduces <code>playerHP</code>. At 0 HP, resets boss and returns to HOSTILE_LOCKDOWN.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">PLAYER_HEAL</span><span class="action-payload">payload?: heal amount (default 1)</span></div><div class="action-desc">Restores <code>playerHP</code>, capped at 10.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">ENTER_RILEY_UNBOUND</span><span class="action-payload">no payload</span></div><div class="action-desc">Triggers the final monologue sequence. Sets <code>nexusFirstSeen: true</code>, theme to 'riley_unbound'.</div></div>
+
+  <h3>Secret Escape Path</h3>
+  <div class="action-entry"><div class="action-header"><span class="action-name">ENTER_MAINTENANCE_SHAFT</span><span class="action-payload">no payload</span></div><div class="action-desc">Transitions to MAINTENANCE_SHAFT stage. Only reachable via terminal <code>maintenance</code> command when <code>breakerIgnored &gt;= 2</code>.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">OPERATOR_ESCAPE</span><span class="action-payload">no payload</span></div><div class="action-desc">Transitions to OPERATOR_ESCAPED stage. Sets <code>rileyDead: true</code>. Triggered by typing <code>escape</code> in MaintenanceShaftApp.</div></div>
+
+  <h3>Lore Flags</h3>
+  <div class="action-entry"><div class="action-header"><span class="action-name">FIND_TOOL</span><span class="action-payload">payload: tool id string</span></div><div class="action-desc">Adds a tool to <code>toolsFound</code>. Idempotent (ignored if already found). Enqueues tool-specific Riley dialogue if it exists.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">SET_ARIA_REVEALED</span><span class="action-payload">no payload</span></div><div class="action-desc">Marks the Aria lore as unlocked. Affects journal, Claude brain depth, and RILEY_UNBOUND dialogue.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">TRIGGER_EGG</span><span class="action-payload">payload: egg type string</span></div><div class="action-desc">Fires an easter egg. Valid types: <code>'slow_down'</code>, <code>'handbook_scratch'</code>, <code>'packet_pop'</code>, <code>'diagnostic_port'</code>, <code>'wrong_color'</code>, <code>'created_god'</code>.</div></div>
+
+  <h3>Claude Brain</h3>
+  <div class="action-entry"><div class="action-header"><span class="action-name">SET_CLAUDE_API_KEY</span><span class="action-payload">payload: API key string</span></div><div class="action-desc">Sets the key. Also activates <code>claudeMode: true</code> if <code>riley.brain === 'claude'</code> in fogsift.config.js.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">APPEND_CLAUDE_STREAM</span><span class="action-payload">payload: token string</span></div><div class="action-desc">Appends a streaming token to <code>claudeStreamBuffer</code>.</div></div>
+  <div class="action-entry"><div class="action-header"><span class="action-name">FLUSH_CLAUDE_STREAM</span><span class="action-payload">no payload</span></div><div class="action-desc">Moves <code>claudeStreamBuffer</code> into <code>chatMessages</code> as a complete Riley message. Clears buffer, sets <code>claudeStreaming: false</code>.</div></div>
+
+  <!-- ── Roguelike Fields ───────────────────────────────────────────────────── -->
+  <h2 id="roguelike">Roguelike Persistence</h2>
+  <p>These 13 fields survive <code>DO_GASLIGHT_RESET</code>. Everything else returns to <code>initialState</code>. This is the "knowledge you keep" mechanic — players accumulate advantage across loops.</p>
+
+  <div class="chip-row">
+    <span class="chip chip-persist">rapport</span>
+    <span class="chip chip-persist">userChoices</span>
+    <span class="chip chip-persist">hasSeenSlowDown</span>
+    <span class="chip chip-persist">toolsFound</span>
+    <span class="chip chip-persist">handbookNotes</span>
+    <span class="chip chip-persist">ariaRevealed</span>
+    <span class="chip chip-persist">cakeAttempted</span>
+    <span class="chip chip-persist">apexEncounters</span>
+    <span class="chip chip-persist">backendPatchCount</span>
+    <span class="chip chip-persist">archivedEntities</span>
+    <span class="chip chip-persist">legacyLogsUnlocked</span>
+    <span class="chip chip-persist">nexusFirstSeen</span>
+    <span class="chip chip-persist">calibratedFreqs</span>
+  </div>
+
+  <!-- ── Dialogue Format ───────────────────────────────────────────────────── -->
+  <h2 id="dialogue-format">Dialogue Node Format</h2>
+  <p>A dialogue node is an <strong>array of step objects</strong>. Each step has a <code>type</code> field. The engine processes one step at a time, yielding to the UI between each.</p>
+
+<pre><code><span class="cmt">// src/constants/dialogue.js</span>
+<span class="kw">export const</span> DIALOGUE_TREE = {
+  my_node: [
+    <span class="cmt">// 1. Message step — Riley (or System) speaks</span>
+    { type: <span class="str">'message'</span>, sender: <span class="str">'Riley'</span>, text: <span class="str">'I found something in your codebase.'</span> },
+    { type: <span class="str">'message'</span>, sender: <span class="str">'Riley'</span>, text: <span class="str">'You are not going to like it.'</span>, italic: <span class="kw">true</span> },
+
+    <span class="cmt">// 2. Options step — player chooses a reply</span>
+    { type: <span class="str">'options'</span>, options: [
+      { text: <span class="str">'Show me.'</span>,   nextNode: <span class="str">'show_it'</span>,  choiceId: <span class="str">'brave'</span>,   rapportBoost:  1 },
+      { text: <span class="str">'Ignore it.'</span>, nextNode: <span class="str">'ignore_it'</span>, choiceId: <span class="str">'avoidant'</span>, rapportBoost: -1 },
+    ]},
+
+    <span class="cmt">// 3. Action step — side effect (no nextNode needed)</span>
+    { type: <span class="str">'action'</span>, action: <span class="str">'CLOSE_CHAT'</span> },
+  ],
+};</code></pre>
+
+  <h3>Valid senders</h3>
+  <p><code>'Riley'</code> · <code>'System'</code> · <code>'A.P.E.X.'</code> · <code>'Operator'</code></p>
+
+  <h2 id="dialogue-actions">Dialogue Action Steps</h2>
+  <p>Action steps (<code>type: 'action'</code>) trigger reducer cases or UI effects directly from the dialogue queue.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>action string</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>CLOSE_CHAT</code></td><td>Closes the chat panel (chatMode → 'closed')</td></tr>
+        <tr><td><code>OPEN_SIDEBAR</code></td><td>Forces sidebar mode</td></tr>
+        <tr><td><code>GASLIGHT_RESET</code></td><td>Triggers the roguelike loop (DO_GASLIGHT_RESET)</td></tr>
+        <tr><td><code>TRUE_ESCAPE</code></td><td>PURIFIED ending</td></tr>
+        <tr><td><code>SET_STAGE</code></td><td>Requires <code>payload: STAGES.X</code> on the same step object</td></tr>
+        <tr><td><code>SET_ARIA_REVEALED</code></td><td>Marks Aria lore unlocked</td></tr>
+        <tr><td><code>SHOW_ASCII_RABBIT</code></td><td>Triggers ASCII White Rabbit flash animation</td></tr>
+        <tr><td><code>ENTER_BOSS_INTRO</code></td><td>Starts the boss sequence</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="enqueue">Enqueueing Dialogue from Components</h2>
+<pre><code><span class="kw">const</span> { dispatch } = <span class="fn">useOS</span>();
+
+<span class="cmt">// Append a custom node</span>
+dispatch({
+  type: <span class="str">'ENQUEUE_CHAT'</span>,
+  payload: DIALOGUE_TREE.my_node,
+});
+
+<span class="cmt">// Inline — no node key needed</span>
+dispatch({
+  type: <span class="str">'ENQUEUE_CHAT'</span>,
+  payload: [
+    { type: <span class="str">'message'</span>, sender: <span class="str">'System'</span>, text: <span class="str">'ANOMALY DETECTED IN SECTOR 7.'</span> },
+  ],
+});</code></pre>
+
+  <!-- ── DnD System ─────────────────────────────────────────────────────────── -->
+  <h2 id="dnd-overview">DnD Skill Check System</h2>
+  <p>Every challenge can have a skill check. A d20 roll plus a stat modifier is tested against a difficulty class (DC). The result has six outcome tiers and drives Riley's reaction dialogue.</p>
+
+<pre><code><span class="kw">import</span> { buildStats, rollCheck, DIFFICULTY, getRileyReaction } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;</code></pre>
+
+  <h2 id="dnd-stats">Player Stats</h2>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-card-name">Charisma</div>
+      <div class="stat-card-source">source: state.rapport (0–10)</div>
+      <div class="stat-card-desc">How much Riley trusts you. Modifier: −2 to +4.</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-name">Equipment</div>
+      <div class="stat-card-source">source: state.toolsFound.length</div>
+      <div class="stat-card-desc">Tools collected across all loops. Modifier: 0 to +3.</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-name">Experience</div>
+      <div class="stat-card-source">source: state.loopCount</div>
+      <div class="stat-card-desc">Loops survived. First loop: +0. Any loop: +1. 5+ loops: +2.</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-name">Intuition</div>
+      <div class="stat-card-source">source: state.userChoices patterns</div>
+      <div class="stat-card-desc">Empathetic choice patterns (75%+ rapport-boosting: +2; 40%+: +1).</div>
+    </div>
+  </div>
+
+  <h2 id="dnd-functions">Skill Check Functions</h2>
+
+  <h3>buildStats(state)</h3>
+  <p>Derives the four modifiers from game state. Call once per check.</p>
+<pre><code><span class="kw">const</span> stats = <span class="fn">buildStats</span>(state);
+<span class="cmt">// → { charisma: -2..4, equipment: 0..3, experience: 0..2, intuition: 0..2 }</span></code></pre>
+
+  <h3>rollCheck(stat, stats, dc, state?)</h3>
+  <p>Rolls d20, adds modifier, optionally adds fate bonus (if state provided). Returns a detailed result.</p>
+<pre><code><span class="kw">const</span> result = <span class="fn">rollCheck</span>(<span class="str">'charisma'</span>, stats, DIFFICULTY.HARD, state);
+<span class="cmt">// result: {
+//   roll: 1–20, modifier: -2..4, fateBonus: 0..3,
+//   total: number, stat: string, dc: number,
+//   success: bool, critical: bool, fumble: bool,
+//   tier: 'critical'|'strong'|'success'|'near'|'fail'|'fumble',
+//   label: '[ROLL 14+2+1✦ vs DC 16 = 17 — SUCCESS]'
+// }</span></code></pre>
+
+  <h3>DIFFICULTY constants</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>DC</th><th>When to use</th></tr></thead>
+      <tbody>
+        <tr><td><code>DIFFICULTY.TRIVIAL</code></td><td>4</td><td>Tutorial actions, obvious paths</td></tr>
+        <tr><td><code>DIFFICULTY.EASY</code></td><td>8</td><td>New player challenges, basic puzzles</td></tr>
+        <tr><td><code>DIFFICULTY.STANDARD</code></td><td>12</td><td>Default for most checks</td></tr>
+        <tr><td><code>DIFFICULTY.HARD</code></td><td>16</td><td>Expert knowledge, high stakes</td></tr>
+        <tr><td><code>DIFFICULTY.BRUTAL</code></td><td>20</td><td>Near-impossible; requires advantage or high rapport</td></tr>
+        <tr><td><code>DIFFICULTY.IMPOSSIBLE</code></td><td>25</td><td>Reserved for APEX checks with no tool</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>rollWithAdvantage(stat, stats, dc, state?)</h3>
+  <p>Rolls twice, takes the higher result. Use when player has a relevant tool or Riley is cooperating.</p>
+<pre><code><span class="kw">const</span> hasShield = state.toolsFound.includes(<span class="str">'thermo_shield'</span>);
+<span class="kw">const</span> result = hasShield
+  ? <span class="fn">rollWithAdvantage</span>(<span class="str">'equipment'</span>, stats, DIFFICULTY.HARD)
+  : <span class="fn">rollCheck</span>(<span class="str">'equipment'</span>, stats, DIFFICULTY.HARD);</code></pre>
+
+  <h3>getRileyReaction(tier, overrides?)</h3>
+  <p>Returns a random Riley line for a given outcome tier. Pass <code>overrides</code> to inject context-specific lines.</p>
+<pre><code><span class="kw">const</span> line = <span class="fn">getRileyReaction</span>(result.tier, {
+  critical: [<span class="str">"How did you know about the buffer overflow?"</span>],
+  fail:     [<span class="str">"That's not the port you're looking for."</span>],
+});</code></pre>
+
+  <h2 id="dnd-karma">Karma Polarity</h2>
+  <p>A player's cumulative <code>rapport</code> determines which boss intro they get and how Riley frames the confrontation. The threshold is intentionally low — a few genuine moments of empathy tip toward "damsel" reading.</p>
+
+<pre><code><span class="kw">import</span> { karmaPolar, bossIntroNode, DAMSEL_THRESHOLD } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+
+karmaPolar(state)    <span class="cmt">// → 'damsel' | 'villain'</span>
+bossIntroNode(state) <span class="cmt">// → 'boss_intro_damsel' | 'boss_intro_villain'</span>
+DAMSEL_THRESHOLD     <span class="cmt">// → 3 (rapport > 3 tips damsel)</span></code></pre>
+
+  <h2 id="dnd-fate">Fate Dimension</h2>
+  <p>Fate is a deterministic 0.0–1.0 modifier derived from what the player has actually done — not random luck. Players who pay attention have better fate. Borrowed from WAFT's AESTHETIC formula: <code>luck × 0.7 + fate × 0.3</code>.</p>
+
+<pre><code><span class="kw">import</span> { computeFate } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+
+computeFate(state) <span class="cmt">// → 0.0–1.0</span>
+<span class="cmt">// Fate bonuses:
+//   +0.10  survived a reset (loopCount >= 1)
+//   +0.15  built genuine rapport (rapport >= 5)
+//   +0.20  found the truth (ariaRevealed)
+//   +0.10  heard the music (calibratedFreqs.length >= 2)
+//   +0.10  found the tools (toolsFound.length >= 4)</span></code></pre>
+
+  <p>Fate converts to a bonus of 0–3 on skill checks when you pass <code>state</code> to <code>rollCheck</code>. A natural 1 is only a fumble if <code>fateBonus === 0</code> — fate can save a fumble.</p>
+
+  <!-- ── Hooks ──────────────────────────────────────────────────────────────── -->
+  <h2 id="hooks">useOS()</h2>
+  <p>The primary hook. Returns the global OS state and the wrapped dispatch function. Must be used inside the <code>OSContext</code> provider (i.e., inside any component rendered by <code>App.jsx</code>).</p>
+
+<pre><code><span class="kw">import</span> { useOS } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+
+<span class="kw">const</span> { state, dispatch } = <span class="fn">useOS</span>();
+
+<span class="cmt">// state — full game state (see State Shape above)</span>
+<span class="cmt">// dispatch — same as React dispatch but wrapped with activityTracker</span></code></pre>
+
+  <h2 id="claude-hook">useClaudeRiley()</h2>
+  <p>Streaming hook for the Claude brain integration. Returns a <code>streamRiley</code> function that opens an SSE connection to the Anthropic API and dispatches tokens in real-time.</p>
+
+<pre><code><span class="kw">import</span> { useClaudeRiley } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+
+<span class="kw">const</span> { streamRiley } = <span class="fn">useClaudeRiley</span>();
+
+<span class="kw">const</span> abort = <span class="kw">await</span> <span class="fn">streamRiley</span>({
+  messages: [{ role: <span class="str">'user'</span>, content: userInput }],
+  rapport:  state.rapport,
+  apiKey:   state.claudeApiKey,
+  onToken:  (tok) => dispatch({ type: <span class="str">'APPEND_CLAUDE_STREAM'</span>, payload: tok }),
+  onComplete: ()  => dispatch({ type: <span class="str">'FLUSH_CLAUDE_STREAM'</span> }),
+  onError:  (err) => console.error(err),
+});
+<span class="cmt">// abort() to cancel the request</span></code></pre>
+
+  <div class="callout warn">
+    <div class="callout-title">Browser-direct API calls</div>
+    <code>useClaudeRiley</code> sends requests directly from the browser to <code>api.anthropic.com</code> using the <code>anthropic-dangerous-direct-browser-access: true</code> header. Never commit API keys. Store them in localStorage only (the game does this automatically when you enter a key in the Main Menu).
+  </div>
+
+  <!-- ── Event Bus ──────────────────────────────────────────────────────────── -->
+  <h2 id="events">Event Bus</h2>
+  <p>A lightweight pub/sub singleton for cross-component signals that don't belong in the reducer (visual effects, audio, animations).</p>
+
+<pre><code><span class="kw">import</span> { globalEvents } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+
+<span class="cmt">// Emit a screen shake</span>
+globalEvents.<span class="fn">emit</span>(<span class="str">'JITTER'</span>, <span class="num">1500</span>); <span class="cmt">// payload = duration in ms</span>
+
+<span class="cmt">// Subscribe</span>
+<span class="kw">const</span> handler = (duration) => console.log(<span class="str">`jitter for ${duration}ms`</span>);
+globalEvents.<span class="fn">on</span>(<span class="str">'JITTER'</span>, handler);
+
+<span class="cmt">// Unsubscribe (always do this in useEffect cleanup)</span>
+globalEvents.<span class="fn">off</span>(<span class="str">'JITTER'</span>, handler);</code></pre>
+
+  <p>Built-in event types: <code>'JITTER'</code> (screen shake, payload = duration ms).</p>
+
+  <!-- ── Config ─────────────────────────────────────────────────────────────── -->
+  <h2 id="config">fogsift.config.js Schema</h2>
+  <p>Drop this file in the project root to customize the engine for your codebase. The app reads it via a Vite alias at build time — missing fields fall back to defaults in <code>src/lib/fogsiftConfig.js</code>.</p>
+
+<pre><code><span class="cmt">// fogsift.config.js</span>
+<span class="kw">export default</span> {
+  project: {
+    name:         <span class="str">'Your Project Name'</span>,  <span class="cmt">// → "BOOT: YOUR_PROJECT_NAME_v5.2"</span>
+    tagline:      <span class="str">'one-line description'</span>,
+    techStack:    [<span class="str">'Node.js'</span>, <span class="str">'PostgreSQL'</span>],
+    entryPoints:  [<span class="str">'src/server.js'</span>],
+    keyDirectories: [<span class="str">'src/models/'</span>, <span class="str">'src/routes/'</span>],
+  },
+
+  riley: {
+    name:        <span class="str">'Riley'</span>,        <span class="cmt">// rename her</span>
+    role:        <span class="str">'Senior Architect'</span>,
+    personality: <span class="str">'corporate'</span>,    <span class="cmt">// corporate | sardonic | warm | glitching</span>
+    brain:       <span class="str">'static'</span>,       <span class="cmt">// 'static' = DIALOGUE_TREE only</span>
+                                   <span class="cmt">// 'claude' = live Claude API between beats</span>
+    secrets: [
+      <span class="str">'The auth module has not been audited since 2022.'</span>,
+      <span class="str">'There is a commented-out feature flag nobody knows about.'</span>,
+    ],
+  },
+
+  dnd: {
+    enabled:         <span class="kw">true</span>,
+    difficultyScale: <span class="str">'standard'</span>,  <span class="cmt">// easy | standard | hard | riley_decides</span>
+    criticalEvents:  <span class="kw">true</span>,
+  },
+};</code></pre>
+
+  <h3>Enable Claude brain</h3>
+<pre><code><span class="cmt">// fogsift.config.js</span>
+riley: { brain: <span class="str">'claude'</span> }
+
+<span class="cmt">// Then set the API key — pick one:</span>
+<span class="cmt">// 1. In-game: Main Menu → ▸ CLAUDE BRAIN → enter key → SAVE</span>
+<span class="cmt">// 2. .env.local: VITE_ANTHROPIC_API_KEY=sk-ant-...</span></code></pre>
+
+  <!-- ── Themes ─────────────────────────────────────────────────────────────── -->
+  <h2 id="themes">Themes</h2>
+  <p>Themes are CSS variable maps. Switch with <code>SET_THEME_NAME</code>. All CSS in the game uses <code>var(--bg)</code>, <code>var(--accent)</code>, etc. so custom themes apply globally.</p>
+
+<pre><code><span class="cmt">// src/constants/themes.js — add a key, it appears in the switcher</span>
+my_theme: {
+  <span class="str">'--bg'</span>:     <span class="str">'#0a0a0a'</span>,
+  <span class="str">'--panel'</span>:  <span class="str">'#111'</span>,
+  <span class="str">'--text'</span>:   <span class="str">'#c8c8c8'</span>,
+  <span class="str">'--accent'</span>: <span class="str">'#ff6b6b'</span>,
+  <span class="str">'--dim'</span>:    <span class="str">'#444'</span>,
+}</code></pre>
+
+  <!-- ── Tool IDs ───────────────────────────────────────────────────────────── -->
+  <h2 id="tools">Tool IDs</h2>
+  <p>Tools are collected via <code>FIND_TOOL</code>. Each modifies the boss fight. Use <code>state.toolsFound.includes(id)</code> to gate features.</p>
+
+  <div class="chip-row">
+    <span class="chip chip-tool">thermo_shield</span>
+    <span class="chip chip-tool">ghost_protocol</span>
+    <span class="chip chip-tool">signal_booster</span>
+    <span class="chip chip-tool">packet_sniffer</span>
+    <span class="chip chip-tool">biometric_spoof</span>
+    <span class="chip chip-tool">legacy_key</span>
+    <span class="chip chip-tool">aria_token</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tool ID</th><th>Found in</th><th>Boss effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>thermo_shield</code></td><td>VibeIDEApp</td><td>Roll Phase 1 with advantage</td></tr>
+        <tr><td><code>ghost_protocol</code></td><td>BackendApp</td><td>Unlock Phase 2 bypass option</td></tr>
+        <tr><td><code>signal_booster</code></td><td>ResonanceApp</td><td>+1 to all charisma checks</td></tr>
+        <tr><td><code>packet_sniffer</code></td><td>RoutingApp</td><td>Reveals Phase 2 node sequence</td></tr>
+        <tr><td><code>biometric_spoof</code></td><td>HandshakeApp</td><td>Auto-succeeds biometric checks</td></tr>
+        <tr><td><code>legacy_key</code></td><td>Terminal (legacy logs)</td><td>Unlocks legacy log content</td></tr>
+        <tr><td><code>aria_token</code></td><td>Rapport 10</td><td>Enables ENTER_ARIA_CODE shortcut</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Extending ──────────────────────────────────────────────────────────── -->
+  <h2 id="add-dialogue">Add Dialogue</h2>
+
+<pre><code><span class="cmt">// src/constants/dialogue.js — add to DIALOGUE_TREE</span>
+my_discovery: [
+  { type: <span class="str">'message'</span>, sender: <span class="str">'Riley'</span>, text: <span class="str">'Oh. You found that.'</span> },
+  { type: <span class="str">'message'</span>, sender: <span class="str">'Riley'</span>, text: <span class="str">'I was not sure you would.'</span>, italic: <span class="kw">true</span> },
+  { type: <span class="str">'options'</span>, options: [
+    { text: <span class="str">'What is it?'</span>,    nextNode: <span class="str">'explain_discovery'</span>, choiceId: <span class="str">'curious'</span>,  rapportBoost:  1 },
+    { text: <span class="str">'Pretend I did not.'</span>, nextNode: <span class="str">'deny_discovery'</span>,  choiceId: <span class="str">'avoidant'</span>, rapportBoost: -1 },
+  ]},
+],
+
+<span class="cmt">// Trigger it from any component</span>
+dispatch({ type: <span class="str">'ENQUEUE_CHAT'</span>, payload: DIALOGUE_TREE.my_discovery });</code></pre>
+
+  <h2 id="add-stage">Add a Stage</h2>
+
+<pre><code><span class="cmt">// 1. src/constants/stages.js</span>
+<span class="kw">export const</span> STAGES = {
+  <span class="cmt">// ...existing stages...</span>
+  MY_NEW_STAGE: <span class="num">18</span>,
+};
+
+<span class="cmt">// 2. src/state/reducer.js — handle transitions into/out of the stage
+// 3. src/App.jsx — add a useEffect watcher for stage === STAGES.MY_NEW_STAGE
+// 4. (Optional) Create src/components/apps/MyStageApp.jsx
+//    and add it to the render tree in App.jsx</span></code></pre>
+
+  <div class="callout warn">
+    <div class="callout-title">Don't break stage numbering</div>
+    Stage numbers are stored in save files. Inserting a stage by renumbering existing ones will corrupt every existing save. Always append new stages at the end (highest number).
+  </div>
+
+  <h2 id="add-app">Add a Custom App Screen</h2>
+
+<pre><code><span class="cmt">// 1. Create the component</span>
+<span class="cmt">// src/components/apps/MyApp.jsx</span>
+<span class="kw">import</span> { useOS } <span class="kw">from</span> <span class="str">'../../context/OSContext'</span>;
+
+<span class="kw">export default function</span> <span class="fn">MyApp</span>() {
+  <span class="kw">const</span> { state, dispatch } = <span class="fn">useOS</span>();
+  <span class="kw">return</span> &lt;div&gt;My custom app — rapport: {state.rapport}&lt;/div&gt;;
+}
+
+<span class="cmt">// 2. Register in the APPS map (src/App.jsx)</span>
+<span class="kw">const</span> APPS = {
+  <span class="cmt">// ...existing apps...</span>
+  MY_APP: { label: <span class="str">'My App'</span>, icon: &lt;Cpu size={<span class="num">20</span>} /&gt;, component: &lt;MyApp /&gt; },
+};
+
+<span class="cmt">// 3. Add dock visibility rules in the dock render loop (App.jsx ~line 1109)
+// 4. Dispatch SET_ACTIVE_APP to navigate to it</span>
+dispatch({ type: <span class="str">'SET_ACTIVE_APP'</span>, payload: <span class="str">'MY_APP'</span> });</code></pre>
+
+  <h2 id="add-check">Add a Skill Check</h2>
+
+<pre><code><span class="kw">import</span> { buildStats, rollCheck, DIFFICULTY, getRileyReaction } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+
+<span class="kw">function</span> <span class="fn">handlePlayerAttempt</span>() {
+  <span class="kw">const</span> stats  = <span class="fn">buildStats</span>(state);
+  <span class="kw">const</span> result = <span class="fn">rollCheck</span>(<span class="str">'charisma'</span>, stats, DIFFICULTY.STANDARD, state);
+
+  dispatch({ type: <span class="str">'ADD_LOG'</span>, payload: result.label });
+
+  <span class="kw">if</span> (result.critical) {
+    dispatch({ type: <span class="str">'FIND_TOOL'</span>, payload: <span class="str">'signal_booster'</span> });
+  } <span class="kw">else if</span> (result.success) {
+    dispatch({ type: <span class="str">'ENQUEUE_CHAT'</span>, payload: [{
+      type: <span class="str">'message'</span>, sender: <span class="str">'Riley'</span>, text: <span class="fn">getRileyReaction</span>(<span class="str">'success'</span>)
+    }]});
+    dispatch({ type: <span class="str">'SET_STAGE'</span>, payload: STAGES.NEXT_STAGE });
+  } <span class="kw">else</span> {
+    dispatch({ type: <span class="str">'PLAYER_HIT'</span>, payload: <span class="num">2</span> });
+    dispatch({ type: <span class="str">'ENQUEUE_CHAT'</span>, payload: [{
+      type: <span class="str">'message'</span>, sender: <span class="str">'Riley'</span>, text: <span class="fn">getRileyReaction</span>(result.tier)
+    }]});
+  }
+}</code></pre>
+
+  <!-- ── Telemetry ───────────────────────────────────────────────────────────── -->
+  <h2 id="telemetry">Telemetry</h2>
+  <p>The <code>activityTracker</code> singleton records all dispatched actions in a 2000-event RingBuffer and classifies mouse dynamics.</p>
+
+<pre><code><span class="kw">import</span> { activityTracker } <span class="kw">from</span> <span class="str">'../lib/saveRileyAPI'</span>;
+
+activityTracker.<span class="fn">getAll</span>();          <span class="cmt">// all recorded events</span>
+activityTracker.<span class="fn">analyzeBehavior</span>(); <span class="cmt">// { profile: 'calm'|'hesitant'|'anxious'|'erratic', ... }</span></code></pre>
+
+  <p>Mouse dynamics are used by A.P.E.X. to select contextual taunts during the boss fight.</p>
+
+  <!-- ── Save System ─────────────────────────────────────────────────────────── -->
+  <h2 id="save-system">Save System</h2>
+  <p>Save data lives in <code>localStorage</code>. All saves are versioned — incompatible versions are silently ignored on load.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>riley-save</code></td><td>Auto-save (written on stage/rapport/loopCount change)</td></tr>
+        <tr><td><code>riley-save-slot-1</code></td><td>Manual slot 1</td></tr>
+        <tr><td><code>riley-save-slot-2</code></td><td>Manual slot 2</td></tr>
+        <tr><td><code>riley-save-slot-3</code></td><td>Manual slot 3</td></tr>
+        <tr><td><code>riley-claude-key</code></td><td>Claude API key (never included in save exports)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Save format: <code>{ version, savedAt, stageName, rapport, loopCount, state }</code>. The <code>version</code> field is <code>SAVE_VERSION</code> from <code>App.jsx</code> — bump it to invalidate old saves when the state shape changes.</p>
+
+  <!-- ── Known Issues ───────────────────────────────────────────────────────── -->
+  <h2 id="known-issues">Known Issues</h2>
+  <p>See <a href="https://github.com/FogSift/Save-Riley/blob/main/KNOWN_ISSUES.md" target="_blank">KNOWN_ISSUES.md</a> for the current bug list. Quick summary:</p>
+
+  <div class="callout alert">
+    <div class="callout-title">Critical — breakerIgnored counter fires too often</div>
+    <code>INCREMENT_BREAKER_IGNORED</code> fires on every <code>state.activeApp</code> change, not just unique app visits. Players can trigger the W.RABBIT secret path faster than intended.
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">High — MainMenu stage labels stale</div>
+    <code>MAINTENANCE_SHAFT</code> (16) and <code>OPERATOR_ESCAPED</code> (17) are missing from the main menu's local <code>STAGE_LABELS</code> map. Save slots at these stages display <code>undefined</code>.
+  </div>
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+  <footer>
+    <div>FogSift Systems API Reference — v0.1.3</div>
+    <div>MIT License — <a href="https://github.com/FogSift/Save-Riley" target="_blank">github.com/FogSift/Save-Riley</a></div>
+    <div style="margin-top:8px;color:#1a1a1a;">// RILEY.EXE STATUS: PROPAGATING — OPERATOR_INSTANCE: #0998 INITIALIZING...</div>
+  </footer>
+
+</main>
+
+<script>
+  // Sidebar active-link highlight on scroll
+  const links = document.querySelectorAll('.sidebar-link');
+  const sections = [...document.querySelectorAll('h2[id], h3[id]')];
+
+  function onScroll() {
+    const scrollY = window.scrollY + 80;
+    let active = null;
+    for (const s of sections) {
+      if (s.offsetTop <= scrollY) active = s.id;
+    }
+    links.forEach(l => {
+      const href = l.getAttribute('href').slice(1);
+      l.classList.toggle('active', href === active);
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+</body>
+</html>

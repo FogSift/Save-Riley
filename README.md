@@ -4,7 +4,7 @@
 
 **Save Riley is an open-source ARG engine you drop into any GitHub repo.** Fork it. Point it at a codebase. Run `fogsift-init`. Watch Riley wake up inside *your* project and start asking questions neither of you can answer.
 
-**[Fork it →](https://github.com/FogSift/Save-Riley/fork)** · **[Roadmap →](./roadmap.html)** · **[FogSift Organization →](https://github.com/FogSift)**
+**[Fork it →](https://github.com/FogSift/Save-Riley/fork)** · **[API Docs →](./public/api-docs.html)** · **[Roadmap →](./roadmap.html)** · **[FogSift Organization →](https://github.com/FogSift)**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![Built with React](https://img.shields.io/badge/Built%20with-React%2018-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -52,6 +52,35 @@ npx fogsift-init --repo /path/to/your-project
 New hire joins your team? Instead of reading 200 pages of internal docs, they boot up a browser game where an AI narrator named Riley guides them through your actual codebase — referencing your real components, your real architecture decisions, your real tech debt. The narrative is structured around understanding *your* project.
 
 They'll remember it.
+
+---
+
+## Developer API
+
+Save Riley ships a full programmatic API for building chapters, custom app screens, and forks. The live reference is served at **`/api-docs.html`** and opens directly from the in-game nav bar (`</> icon`).
+
+**[View API Reference →](./public/api-docs.html)**
+
+```js
+// import from the stable public surface
+import {
+  STAGES, DIALOGUE_TREE, ACTION_TYPES,
+  rollCheck, buildStats, DIFFICULTY,
+  karmaPolar, computeFate,
+  useOS, globalEvents,
+} from './src/lib/saveRileyAPI.js';
+```
+
+The docs cover:
+
+- **State shape** — all ~80 fields, types, descriptions
+- **Actions reference** — all 68 reducer action types with payload shapes
+- **Dialogue format** — message/options/action node spec, senders, dialogue actions
+- **DnD system** — `rollCheck`, `buildStats`, difficulty classes, karma polarity, fate dimension
+- **Hooks** — `useOS()`, `useClaudeRiley()`
+- **Event bus** — `globalEvents` pub/sub for cross-component signals
+- **Extending** — step-by-step guides: add dialogue, add a stage, add an app screen, add a skill check
+- **fogsift.config.js schema** — full field documentation
 
 ---
 
@@ -636,6 +665,22 @@ Neither theory is confirmed. The game ends before you know. That's the ending.
 - **Full ARG layer** — real URLs, real emails, real Discord hidden in fiction
 - **Multiplayer adversarial** — one player is the operator, another plays Riley in real-time
 - **Procedurally generated facilities** — randomize everything from a seed
+
+---
+
+## Known Issues
+
+A curated list of confirmed bugs, their impact, and workarounds lives in **[KNOWN_ISSUES.md](./KNOWN_ISSUES.md)**.
+
+Quick summary as of v0.1.3:
+
+| Severity | Issue |
+| -------- | ----- |
+| Critical | `breakerIgnored` increments on every app switch, not just first visits |
+| High | `MainMenu.jsx` stage labels missing stages 16–17 |
+| Medium | `cat .white_rabbit` claims it won't appear again, but always does |
+| Medium | `SELECT_CHAT_OPTION` silently swallows missing `nextNode` |
+| Low | App dock remains interactive during `MAINTENANCE_SHAFT` / `OPERATOR_ESCAPED` |
 
 ---
 

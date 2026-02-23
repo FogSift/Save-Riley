@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useReducer, useCallback } from 'r
 import {
   Network, Cpu, Globe, Terminal, Fingerprint, Palette,
   BrainCircuit, MessageSquare, BookOpen, ScrollText, Smartphone,
-  Flame, LogOut, Skull, X, Zap,
+  Flame, LogOut, Skull, X, Zap, Code2,
 } from 'lucide-react';
 
 import { STAGES } from './constants/stages';
@@ -850,6 +850,17 @@ export default function App() {
                 </div>
               )}
             </div>
+
+            {/* API Docs link */}
+            <a
+              href="/api-docs.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center p-1.5 rounded-md transition-all bg-[var(--panel)] text-[var(--text)] hover:bg-[var(--dim-30)] border border-[var(--dim)]"
+              title="Developer API Reference"
+            >
+              <Code2 size={16} />
+            </a>
 
             {/* Journal toggle */}
             <button
